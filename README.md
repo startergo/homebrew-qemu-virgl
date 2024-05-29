@@ -16,9 +16,9 @@ Features:
 
 ## Installation
 
-`brew install knazarov/qemu-virgl/qemu-virgl`
+`brew install startergo/qemu-virgl/qemu-virgl`
 
-Or `brew tap knazarov/qemu-virgl` and then `brew install qemu-virgl`.
+Or `brew tap startergo/qemu-virgl` and then `brew install qemu-virgl`.
 
 
 ## Usage
