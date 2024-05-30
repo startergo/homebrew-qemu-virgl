@@ -8,7 +8,7 @@ class Libangle < Formula
   bottle do
     root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/tag/libangle-20211212.1"
     sha256 cellar: :any, arm64_big_sur: "6e776fc996fa02df211ee7e79512d4996558447bde65a63d2c7578ed1f63f660"
-    sha256 cellar: :any, big_sur: "cad199a9ff7839b1258e039104babe3ca1510b77fd3afbd4c8cc3cf194a143d5"
+    sha256 cellar: :any, big_sur: "65c5847ba746f8c7b28fd7d97bd4c44c5c001666461cb2bed4b155d5d63966f2"
   end
 
   depends_on "meson" => :build
