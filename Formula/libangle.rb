@@ -24,7 +24,7 @@ class Libangle < Formula
         with_env(PATH: path) do
           Dir.chdir(buildpath)
 
-          system "python2", "scripts/bootstrap.py"
+          system "python3", "scripts/bootstrap.py"
           system "gclient", "sync"
           if Hardware::CPU.arm?
             system "gn", "gen", \
