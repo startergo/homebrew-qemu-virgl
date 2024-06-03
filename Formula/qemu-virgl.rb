@@ -1,7 +1,7 @@
 class QemuVirgl < Formula
   desc "Emulator for x86 and PowerPC"
- url "https://github.com/akihikodaki/qemu/tree/macos"	 url "https://github.com/qemu/qemu.git", using: :git, revision: "99fc08366b06282614daeda989d2fde6ab8a707f"
- version "20241212.1"	  version "20211212.1"
+ url "https://github.com/akihikodaki/qemu/tree/macos"
+ version "20241212.1"
  sha256 "d0288b547a693be3913dfbe7399c8b9452691b081e0deffa39b4eaa1aff4a095"
  license "GPL-2.0-only"
   
@@ -34,10 +34,6 @@ class QemuVirgl < Formula
   end
 
   # waiting for upstreaming of https://github.com/akihikodaki/qemu/tree/macos
-  patch :p1 do
-    url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/87072b7ccc07f5087bf0848fa8920f8b3f8d5a47/Patches/qemu-v05.diff"
-    sha256 "6d27699ba454b5ecb7411822a745b89dce3dea5fccabfb56c84ad698f3222dd4"
-  end
 
   def install
     ENV["LIBTOOL"] = "glibtool"
