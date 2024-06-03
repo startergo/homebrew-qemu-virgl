@@ -2,7 +2,6 @@ class QemuVirgl < Formula
   desc "Emulator for x86 and PowerPC"
  url "https://github.com/akihikodaki/qemu/tree/macos"
  version "20241212.1"
- sha256 "d0288b547a693be3913dfbe7399c8b9452691b081e0deffa39b4eaa1aff4a095"
  license "GPL-2.0-only"
   
   depends_on "libtool" => :build
