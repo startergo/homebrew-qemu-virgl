@@ -1,7 +1,7 @@
 class Virglrenderer < Formula
   desc "VirGL virtual OpenGL renderer"
   homepage "https://gitlab.freedesktop.org/virgl/virglrenderer"
-  url "https://github.com/akihikodaki/virglrenderer/tree/macos",
+  url "https://github.com/akihikodaki/virglrenderer/tree/macos"
   version "20211212.1"
   license "MIT"
 
