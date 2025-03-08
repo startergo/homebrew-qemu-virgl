@@ -15,30 +15,32 @@ class Libangle < Formula
   depends_on "ninja" => :build
 
   resource "depot_tools" do
-    url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", revision: "dc86a4b9044f9243886ca0da0c1753820ac51f45"
+    url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", revision: "dc86a4b9044f9243886da0da0c1753820ac51f45"
   end
 
   def install
     mkdir "build" do
       resource("depot_tools").stage do
-        # Append the current directory (depot_tools) to the PATH.
+        # Append the current resource directory (depot_tools) to the PATH.
         path = PATH.new(ENV["PATH"], Dir.pwd)
         with_env(PATH: path) do
-          Dir.chdir(buildpath)
+          # Instead of changing directory within a chdir block,
+          # explicitly refer to buildpath where scripts reside.
+          system "python2", "#{buildpath}/scripts/bootstrap.py"
+          system "gclient", "sync", chdir: buildpath
 
-          system "python2", "scripts/bootstrap.py"
-          system "gclient", "sync"
           if Hardware::CPU.arm?
-            system "gn", "gen", "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", "./angle_build"
+            system "gn", "gen", "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", "#{buildpath}/angle_build"
           else
-            system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "./angle_build"
+            system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "#{buildpath}/angle_build"
           end
-          system "ninja", "-C", "angle_build"
-          lib.install "angle_build/libabsl.dylib"
-          lib.install "angle_build/libEGL.dylib"
-          lib.install "angle_build/libGLESv2.dylib"
-          lib.install "angle_build/libchrome_zlib.dylib"
-          include.install Pathname.glob("include/*")
+
+          system "ninja", "-C", "#{buildpath}/angle_build"
+          lib.install "#{buildpath}/angle_build/libabsl.dylib"
+          lib.install "#{buildpath}/angle_build/libEGL.dylib"
+          lib.install "#{buildpath}/angle_build/libGLESv2.dylib"
+          lib.install "#{buildpath}/angle_build/libchrome_zlib.dylib"
+          include.install Dir["#{buildpath}/include/*"]
         end
       end
     end
