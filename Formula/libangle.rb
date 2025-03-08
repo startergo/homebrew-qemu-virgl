@@ -11,6 +11,7 @@ class Libangle < Formula
     sha256 cellar: :any, big_sur:       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
   end
 
+  depends_on "python@2" => :build
   depends_on "meson" => :build
   depends_on "ninja" => :build
 
