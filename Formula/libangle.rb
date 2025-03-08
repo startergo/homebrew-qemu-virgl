@@ -21,6 +21,7 @@ class Libangle < Formula
   def install
     mkdir "build" do
       resource("depot_tools").stage do
+        # Append the current directory (depot_tools) to the PATH.
         path = PATH.new(ENV["PATH"], Dir.pwd)
         with_env(PATH: path) do
           Dir.chdir(buildpath)
