@@ -1,7 +1,7 @@
 class Libangle < Formula
   desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS and Android"
   homepage "https://github.com/google/angle"
-  url "https://github.com/google/angle.git", using: :git, revision: "df0f7133799ca6aa0d31802b22d919c6197051cf"
+  url "https://github.com/google/angle.git", using: :git, revision: "fffbc739779a2df56a464fd6853bbfb24bebb5f6"
   version "2025.03.08.1"
   license "BSD-3-Clause"
 
@@ -17,7 +17,7 @@ class Libangle < Formula
 
   resource "depot_tools" do
     url "https://chromium.googlesource.com/chromium/tools/depot_tools.git",
-        revision: "dc86a4b9044f9243886ca0da0c1753820ac51f45"
+        revision: "22df6f8e622dc3e8df8dc8b5d3e3503b169af78e"
   end
 
   def install
@@ -26,7 +26,7 @@ class Libangle < Formula
       ENV.prepend_path "PATH", Dir.pwd
     end
 
-    # Run bootstrap and sync commands in the root of the buildpath.
+    # Run bootstrap and sync commands using Python 2.
     system "python2", "scripts/bootstrap.py"
     system "gclient", "sync"
 
