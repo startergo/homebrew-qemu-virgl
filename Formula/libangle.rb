@@ -15,7 +15,8 @@ class Libangle < Formula
   depends_on "ninja" => :build
 
   resource "depot_tools" do
-    url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", revision: "dc86a4b9044f9243886da0da0c1753820ac51f45"
+    url "https://chromium.googlesource.com/chromium/tools/depot_tools.git",
+        revision: "dc86a4b9044f9243886ca0da0c1753820ac51f45"
   end
 
   def install
