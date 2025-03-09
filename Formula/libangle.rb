@@ -23,8 +23,8 @@ class Libangle < Formula
   def install
     # Initialize pyenv and set the correct Python version
     ENV.prepend_path "PATH", Formula["pyenv"].opt_prefix/"bin"
-    system "pyenv", "init", "--path"
-    system "pyenv", "install", "2.7.18" unless system "pyenv", "versions", "--bare", "|", "grep", "-q", "^2.7.18$"
+    system "eval", "$(pyenv init --path)"
+    system "pyenv", "install", "-s", "2.7.18"
     system "pyenv", "global", "2.7.18"
 
     # Stage and check out the depot_tools resource
