@@ -17,8 +17,6 @@ class Libangle < Formula
     resource("depot_tools").stage(buildpath/"depot_tools")
     ENV.prepend_path "PATH", buildpath/"depot_tools"
 
-    # Removed unnecessary directory creation and git clone steps
-    # Simplified to use the correct paths and commands
     system "python3", "scripts/bootstrap.py"
     system "gclient", "sync"
     if Hardware::CPU.arm?
