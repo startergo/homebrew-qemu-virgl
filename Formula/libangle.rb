@@ -22,11 +22,11 @@ class Libangle < Formula
   def install
     resource("depot_tools").stage do
       ENV.prepend_path "PATH", Dir.pwd
-      system "python3", "scripts/bootstrap.py"
-      system "gclient", "sync"
     end
 
     mkdir "build" do
+      system "python3", "scripts/bootstrap.py"
+      system "gclient", "sync"
       if Hardware::CPU.arm?
         system "gn", "gen", "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", "../angle_build"
       else
