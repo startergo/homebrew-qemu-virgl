@@ -33,12 +33,9 @@ class Libangle < Formula
       # Diagnostic step: Check if python3.9 exists
       system "ls", "-l", python3_9_path
 
-      # Diagnostic step: Check if bootstrap.py exists in the depot_tools directory
-      system "ls", "-l", "scripts/bootstrap.py"
+      # Diagnostic step: Check the contents of the depot_tools directory
+      system "ls", "-l"
 
-      # Run the bootstrap script using python3.9
-      system python3_9_path, "scripts/bootstrap.py"
-      
       # Sync the ANGLE repository using gclient
       system "gclient", "sync"
     end
