@@ -24,19 +24,21 @@ class Libangle < Formula
     system "tar", "xvf", tarball_path
 
     # List the contents of the current directory after extraction
-    ohai "Contents of the current directory after extraction:"
-    system "ls", "-l"
+    current_dir_contents = `ls -l`
+    ohai "Contents of the current directory after extraction:\n#{current_dir_contents}"
 
-    # List the contents of the extracted directory
+    # List the detailed contents of the tarball
+    tarball_contents = `tar -tvf #{tarball_path}`
+    ohai "Detailed contents of the tarball:\n#{tarball_contents}"
+
+    # Verify if the extraction was successful
     extracted_dir = Dir.glob("*").find { |f| File.directory?(f) && f.include?("angle") }
-    if extracted_dir
-      ohai "Contents of the extracted directory (#{extracted_dir}):"
-      system "ls", "-l", extracted_dir
-    else
+    unless extracted_dir
       odie "Tarball extraction failed! No directory found containing 'angle'"
     end
+    ohai "Extraction successful, found directory: #{extracted_dir}"
 
-    # Proceed with the build process if extraction was successful
+    # Create the build directory
     mkdir "build" do
       # Generate the build files
       gn_args = "--args=use_custom_libcxx=false treat_warnings_as_errors=false"
