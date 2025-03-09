@@ -37,10 +37,19 @@ class Libangle < Formula
     cd source_dir do
       # Disable depot_tools auto-update.
       ENV["DEPOT_TOOLS_UPDATE"] = "0"
-      # Run ANGLE's bootstrap script.
+
+      # Run the bootstrap script.
       system "python3", "scripts/bootstrap.py"
-      # Synchronize dependencies with additional --force flag.
-      system "gclient", "sync", "-D", "--force"
+
+      # Remove any existing _bad_scm directories if present.
+      Dir.glob("_bad_scm*").each do |bad_dir|
+        ohai "Removing stale directory: #{bad_dir}"
+        FileUtils.rm_rf(bad_dir)
+      end
+
+      # Run gclient sync with force flags and additional clean-up flag.
+      system "gclient", "sync", "-D", "--force", "--delete_unversioned_trees"
+
       # Generate build files for a release build.
       system "gn", "gen", "--args=is_debug=false", "../build/angle"
     end
@@ -48,12 +57,12 @@ class Libangle < Formula
     # Build ANGLE using ninja.
     system "ninja", "-C", "build/angle"
 
-    # Install the required built libraries.
+    # Install the built libraries.
     lib.install "#{buildpath}/build/angle/libabsl.dylib"
     lib.install "#{buildpath}/build/angle/libEGL.dylib"
     lib.install "#{buildpath}/build/angle/libGLESv2.dylib"
     lib.install "#{buildpath}/build/angle/libchrome_zlib.dylib"
-    # Install header files.
+    # Install the header files.
     include.install Dir["#{source_dir}/include/*"]
   end
 
