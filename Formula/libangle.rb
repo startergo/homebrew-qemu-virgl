@@ -7,7 +7,6 @@ class Libangle < Formula
 
   bottle do
     root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20250309.1"
-    cellar :any
     sha256 "748d93eeabbc36f740e84338393deea0167c49da70e069708c54f5767003d12f" => :sequoia
     # Placeholder SHA256 values for other macOS versions
     sha256 "placeholder-sha256-for-monterey" => :monterey
