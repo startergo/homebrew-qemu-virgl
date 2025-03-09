@@ -33,25 +33,27 @@ class Libangle < Formula
       odie "Tarball extraction failed! No files extracted."
     end
 
+    # Set up environment variables if needed
+    ENV["DEPOT_TOOLS_UPDATE"] = "0"
+    ENV["GYP_DEFINES"] = "use_system_libffi=1 use_system_zlib=1"
+
     # Create the build directory
     mkdir "build" do
       # Generate the build files
       gn_args = "--args=use_custom_libcxx=false treat_warnings_as_errors=false"
       gn_args += ' target_cpu="arm64"' if Hardware::CPU.arm?
       ohai "Running gn gen with arguments: #{gn_args}"
-      
+
       # Run gn gen with detailed logging
-      system "gn", "gen", ".", gn_args do |status, output|
-        puts output
-        raise "gn gen failed!" unless status.success?
-      end
+      gn_output = `gn gen . #{gn_args} 2>&1`
+      puts gn_output
+      raise "gn gen failed!" unless $?.success?
 
       # Build the project
       ohai "Running ninja build"
-      system "ninja", "-C", "." do |status, output|
-        puts output
-        raise "ninja build failed!" unless status.success?
-      end
+      ninja_output = `ninja -C . 2>&1`
+      puts ninja_output
+      raise "ninja build failed!" unless $?.success?
 
       # Install the libraries
       lib.install "libabsl.dylib"
