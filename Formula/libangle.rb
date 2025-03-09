@@ -14,6 +14,7 @@ class Libangle < Formula
   depends_on "meson" => :build
   depends_on "ninja" => :build
   depends_on "python@3.9" => :build
+  depends_on "pyenv" => :build
 
   resource "depot_tools" do
     url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", revision: "dc86a4b9044f9243886ca0da0c1753820ac51f45"
@@ -22,11 +23,12 @@ class Libangle < Formula
   def install
     resource("depot_tools").stage do
       ENV.prepend_path "PATH", Dir.pwd
+      system "pyenv", "global", "2.7.18"
+      system "python2.7", "scripts/bootstrap.py"
+      system "gclient", "sync"
     end
 
     mkdir "build" do
-      system "python3", "scripts/bootstrap.py"
-      system "gclient", "sync"
       if Hardware::CPU.arm?
         system "gn", "gen", "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", "../angle_build"
       else
