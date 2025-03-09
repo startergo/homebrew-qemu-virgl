@@ -24,6 +24,14 @@ class Libangle < Formula
     resource("depot_tools").stage do
       ENV.prepend_path "PATH", Dir.pwd
       ENV.prepend_path "PATH", "#{ENV["HOME"]}/.pyenv/shims"
+      
+      # Diagnostic step: Check if python2.7 exists
+      system "which", "python2.7"
+      
+      # Diagnostic step: Check if bootstrap.py exists
+      system "ls", "-l", "scripts/bootstrap.py"
+      
+      # Run the bootstrap script using python2.7
       system "python2.7", "scripts/bootstrap.py"
       system "gclient", "sync"
     end
