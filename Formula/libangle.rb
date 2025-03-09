@@ -15,6 +15,10 @@ class Libangle < Formula
     tarball_path = cached_download
     ohai "Using cached download: #{tarball_path}"
 
+    # List the contents of the tarball
+    ohai "Contents of the tarball:"
+    system "tar", "tvf", tarball_path
+
     # Extract the tarball
     ohai "Extracting tarball: #{tarball_path}"
     system "tar", "xvf", tarball_path
