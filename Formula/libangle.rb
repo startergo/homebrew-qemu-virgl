@@ -17,9 +17,16 @@ class Libangle < Formula
     resource("depot_tools").stage(buildpath/"depot_tools")
     ENV.prepend_path "PATH", buildpath/"depot_tools"
 
+    # Bootstrap the environment
     system "python3", "scripts/bootstrap.py"
+    
+    # Sync dependencies
     system "gclient", "sync"
-    system "gn", "gen", "out/Release", "--args=is_debug=false"
+    
+    # Generate build files
+    system "gn", "gen", "--args=is_debug=false out/Release"
+    
+    # Build the project
     system "autoninja", "-C", "out/Release"
 
     # Install the built libraries
