@@ -33,9 +33,8 @@ class Libangle < Formula
       odie "Tarball extraction failed! No files extracted."
     end
 
-    # Set up environment variables if needed
-    ENV["DEPOT_TOOLS_UPDATE"] = "0"
-    ENV["GYP_DEFINES"] = "use_system_libffi=1 use_system_zlib=1"
+    # Ensure the correct PATH is used
+    ENV.prepend_path "PATH", "/Users/macbookpro/depot_tools"
 
     # Create the build directory
     mkdir "build" do
