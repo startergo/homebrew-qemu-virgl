@@ -1,12 +1,11 @@
 class Libangle < Formula
   desc "Conformant OpenGL ES implementation for multiple platforms"
   homepage "https://github.com/google/angle"
-  url "https://github.com/google/angle.git",
-      using: :git,
-      revision: "fffbc739779a2df56a464fd6853bbfb24bebb5f6",
-      submodules: false
+  # Use the GitHub tarball for the specific commit. Tarballs do not include .git info or submodules.
+  url "https://github.com/google/angle/archive/fffbc739779a2df56a464fd6853bbfb24bebb5f6.tar.gz"
   version "2025.03.08.1"
   license "BSD-3-Clause"
+  head "https://github.com/google/angle.git", branch: "master"
 
   bottle do
     root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/libangle-2025.03.08.1"
@@ -15,6 +14,7 @@ class Libangle < Formula
   end
 
   depends_on "ninja" => :build
+  depends_on "python@3.10" => :build
 
   resource "depot_tools" do
     url "https://chromium.googlesource.com/chromium/tools/depot_tools.git",
@@ -27,34 +27,28 @@ class Libangle < Formula
       ENV.prepend_path "PATH", Dir.pwd
     end
 
-    # Create and enter the source/angle directory.
-    (buildpath/"source/angle").mkpath
-    cd "source/angle" do
-      # Initialize an empty repository and fetch the desired commit
-      system "git", "init"
-      system "git", "fetch", "https://chromium.googlesource.com/angle/angle", "fffbc739779a2df56a464fd6853bbfb24bebb5f6"
-      system "git", "checkout", "FETCH_HEAD"
-
+    # The tarball extracts into a directory named:
+    # "angle-fffbc739779a2df56a464fd6853bbfb24bebb5f6"
+    cd "angle-fffbc739779a2df56a464fd6853bbfb24bebb5f6" do
       # Disable depot_tools auto-update.
       ENV["DEPOT_TOOLS_UPDATE"] = "0"
-
-      # Run bootstrap to set up additional required files.
+      # Run the bootstrap script to set up additional required files.
       system "python3", "scripts/bootstrap.py"
-      # Synchronize dependencies with the -D flag.
+      # Synchronize dependencies (without triggering submodule fetching).
       system "gclient", "sync", "-D"
-      # Generate build files with a release build (is_debug=false).
-      system "gn", "gen", "--args=is_debug=false", "../../build/angle"
+      # Generate build files for a release build.
+      system "gn", "gen", "--args=is_debug=false", "../build/angle"
     end
 
     # Build ANGLE using ninja.
     system "ninja", "-C", "build/angle"
 
-    # Install only the desired built libraries and headers.
+    # Install only the required built libraries and headers.
     lib.install "#{buildpath}/build/angle/libabsl.dylib"
     lib.install "#{buildpath}/build/angle/libEGL.dylib"
     lib.install "#{buildpath}/build/angle/libGLESv2.dylib"
     lib.install "#{buildpath}/build/angle/libchrome_zlib.dylib"
-    include.install Dir["source/angle/include/*"]
+    include.install Dir["angle-fffbc739779a2df56a464fd6853bbfb24bebb5f6/include/*"]
   end
 
   test do
