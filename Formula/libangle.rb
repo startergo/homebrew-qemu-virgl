@@ -36,6 +36,9 @@ class Libangle < Formula
       # Diagnostic step: Check the contents of the depot_tools directory
       system "ls", "-l"
 
+      # Configure gclient
+      system "gclient", "config", "--name", "src", "https://chromium.googlesource.com/angle/angle.git"
+
       # Sync the ANGLE repository using gclient
       system "gclient", "sync"
     end
