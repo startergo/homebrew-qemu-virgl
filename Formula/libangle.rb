@@ -27,24 +27,13 @@ class Libangle < Formula
     current_dir_contents = `ls -l`
     ohai "Contents of the current directory after extraction:\n#{current_dir_contents}"
 
-    # List the detailed contents of the tarball
-    tarball_contents = `tar -tvf #{tarball_path}`
-    ohai "Detailed contents of the tarball:\n#{tarball_contents}"
-
-    # Verify if the extraction was successful
-    extracted_dir = Dir.glob("*").find { |f| File.directory?(f) && f.include?("angle") }
-    unless extracted_dir
-      odie "Tarball extraction failed! No directory found containing 'angle'"
-    end
-    ohai "Extraction successful, found directory: #{extracted_dir}"
-
     # Create the build directory
     mkdir "build" do
       # Generate the build files
       gn_args = "--args=use_custom_libcxx=false treat_warnings_as_errors=false"
       gn_args += ' target_cpu="arm64"' if Hardware::CPU.arm?
       ohai "Running gn gen with arguments: #{gn_args}"
-      system "gn", "gen", gn_args, "../" do |status, output|
+      system "gn", "gen", gn_args, ".." do |status, output|
         puts output
         raise "gn gen failed!" unless status.success?
       end
