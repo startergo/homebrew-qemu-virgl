@@ -10,28 +10,27 @@ class Libangle < Formula
   depends_on "python@3.9" => :build
 
   resource "depot_tools" do
-    url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", revision: "dc86a4b9044f9243886ca0da0c1753820ac51f45"
+    url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", using: :git, revision: "dc86a4b9044f9243886ca0da0c1753820ac51f45"
   end
 
   def install
     resource("depot_tools").stage(buildpath/"depot_tools")
     ENV.prepend_path "PATH", buildpath/"depot_tools"
 
-    mkdir "angle" do
-      system "git", "clone", "https://github.com/google/angle.git", "."
-      system "python3", "scripts/bootstrap.py"
-      system "gclient", "sync"
-      if Hardware::CPU.arm?
-        system "gn", "gen", "angle_build", "--args=is_debug=false target_cpu='arm64'"
-      else
-        system "gn", "gen", "angle_build", "--args=is_debug=false"
-      end
-      system "autoninja", "-C", "angle_build"
-      
-      # Install the built libraries
-      lib.install Dir["angle_build/*.dylib"]
-      include.install Dir["include/*"]
+    # Removed unnecessary directory creation and git clone steps
+    # Simplified to use the correct paths and commands
+    system "python3", "scripts/bootstrap.py"
+    system "gclient", "sync"
+    if Hardware::CPU.arm?
+      system "gn", "gen", "angle_build", "--args=is_debug=false target_cpu='arm64'"
+    else
+      system "gn", "gen", "angle_build", "--args=is_debug=false"
     end
+    system "autoninja", "-C", "angle_build"
+
+    # Install the built libraries
+    lib.install Dir["angle_build/*.dylib"]
+    include.install Dir["include/*"]
   end
 
   test do
