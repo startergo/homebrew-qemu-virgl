@@ -16,12 +16,13 @@ class Libangle < Formula
   def install
     resource("depot_tools").stage(buildpath/"depot_tools")
     ENV.prepend_path "PATH", buildpath/"depot_tools"
+    
+    # Install vpython
+    system "python3", "-m", "pip", "install", "vpython"
 
-    # Ensure the repository is in a clean state
+    system "python3", "scripts/bootstrap.py"
     system "git", "reset", "--hard"
     system "git", "clean", "-fdx"
-    
-    system "python3", "scripts/bootstrap.py"
     system "gclient", "sync", "--force"
     if Hardware::CPU.arm?
       system "gn", "gen", "angle_build", "--args=is_debug=false target_cpu='arm64'"
