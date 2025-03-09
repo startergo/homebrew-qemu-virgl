@@ -17,13 +17,9 @@ class Libangle < Formula
     resource("depot_tools").stage(buildpath/"depot_tools")
     ENV.prepend_path "PATH", buildpath/"depot_tools"
 
-    # Clone the angle repository if not already present
-    system "git", "clone", "https://chromium.googlesource.com/angle/angle", "."
-    
     system "python3", "scripts/bootstrap.py"
     system "gclient", "sync"
-    system "git", "checkout", "main"
-    system "gn", "gen", "--args=is_debug=false out/Release"
+    system "gn", "gen", "out/Release", "--args=is_debug=false"
     system "autoninja", "-C", "out/Release"
 
     # Install the built libraries
