@@ -20,14 +20,13 @@ class Libangle < Formula
     # Create the build directory
     mkdir "build" do
       # Generate the build files
-      if Hardware::CPU.arm?
-        system "gn", "gen", "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", "../"
-      else
-        system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "../"
-      end
+      gn_args = "--args=use_custom_libcxx=false treat_warnings_as_errors=false"
+      gn_args += ' target_cpu="arm64"' if Hardware::CPU.arm?
+
+      system "gn", "gen", gn_args, "../" or raise "gn gen failed!"
 
       # Build the project
-      system "ninja", "-C", "."
+      system "ninja", "-C", "." or raise "ninja build failed!"
 
       # Install the libraries
       lib.install "libabsl.dylib"
