@@ -22,6 +22,15 @@ class Libangle < Formula
         revision: "22df6f8e622dc3e8df8dc8b5d3e3503b169af78e"
   end
 
+  def remove_bad_scm!
+    # Recursively remove any directories whose name starts with _bad_scm
+    Dir.glob("**/_bad_scm*", File::FNM_DOTMATCH).each do |dir|
+      next if [".", ".."].include?(File.basename(dir))
+      opoo "Removing stale directory: #{dir}"
+      FileUtils.rm_rf(dir)
+    end
+  end
+
   def install
     # Stage depot_tools into buildpath/depot_tools so that gclient becomes available.
     depot_tools_dir = buildpath/"depot_tools"
@@ -41,26 +50,24 @@ class Libangle < Formula
       # Run the bootstrap script.
       system "python3", "scripts/bootstrap.py"
 
-      # Pre-clean any _bad_scm directories (if present).
-      Dir.glob("_bad_scm*").each do |bad_dir|
-        ohai "Removing stale directory: #{bad_dir}"
-        FileUtils.rm_rf(bad_dir)
+      # Pre-clean any _bad_scm directories.
+      remove_bad_scm!
+
+      # Define the gclient sync command.
+      sync_cmd = %w[gclient sync -D --force --delete_unversioned_trees]
+
+      # Run gclient sync.
+      ohai "Running initial gclient sync..."
+      sync_success = system(*sync_cmd)
+
+      # If sync fails, attempt cleanup and retry.
+      unless sync_success
+        opoo "gclient sync failed. Removing _bad_scm directories recursively and retrying..."
+        remove_bad_scm!
+        sync_success = system(*sync_cmd)
       end
 
-      # Run gclient sync with force and delete unversioned trees.
-      sync_cmd = "gclient sync -D --force --delete_unversioned_trees"
-
-      if !system(sync_cmd)
-        ohai "gclient sync failed. Cleaning nested _bad_scm directories and retrying..."
-        # Remove any nested _bad_scm directories recursively.
-        Dir.glob("**/_bad_scm**", File::FNM_DOTMATCH).each do |dir|
-          next if [".", ".."].include?(File.basename(dir))
-          ohai "Removing directory: #{dir}"
-          FileUtils.rm_rf(dir)
-        end
-        # Retry sync.
-        system(sync_cmd) or odie "gclient sync failed after cleanup"
-      end
+      odie "gclient sync failed after cleanup. Please file an issue." unless sync_success
 
       # Generate build files for a release build with GN.
       system "gn", "gen", "--args=is_debug=false", "../build/angle"
