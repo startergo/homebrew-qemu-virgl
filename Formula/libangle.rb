@@ -3,7 +3,7 @@ class Libangle < Formula
   homepage "https://angleproject.org/"
   url "https://chromium.googlesource.com/angle/angle/+archive/refs/heads/main.tar.gz"
   sha256 "3a8c08be8e91adf590d603aed6976c6c9c515ea549dcc01a93b413b514aa59d1"
-  version "main"  # Explicitly set the version attribute
+  version "main"
   license "BSD-3-Clause"
 
   depends_on "cmake" => :build
@@ -27,13 +27,21 @@ class Libangle < Formula
     current_dir_contents = `ls -l`
     ohai "Contents of the current directory after extraction:\n#{current_dir_contents}"
 
+    # Check for extracted files
+    extracted_files = Dir.glob("*")
+    if extracted_files.empty?
+      odie "Tarball extraction failed! No files extracted."
+    end
+
     # Create the build directory
     mkdir "build" do
       # Generate the build files
       gn_args = "--args=use_custom_libcxx=false treat_warnings_as_errors=false"
       gn_args += ' target_cpu="arm64"' if Hardware::CPU.arm?
       ohai "Running gn gen with arguments: #{gn_args}"
-      system "gn", "gen", gn_args, ".." do |status, output|
+      
+      # Run gn gen with detailed logging
+      system "gn", "gen", ".", gn_args do |status, output|
         puts output
         raise "gn gen failed!" unless status.success?
       end
