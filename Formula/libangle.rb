@@ -17,7 +17,8 @@ class Libangle < Formula
     resource("depot_tools").stage(buildpath/"depot_tools")
     ENV.prepend_path "PATH", buildpath/"depot_tools"
 
-    mkdir "build" do
+    mkdir "angle" do
+      system "git", "clone", "https://github.com/google/angle.git", "."
       system "python3", "scripts/bootstrap.py"
       system "gclient", "sync"
       if Hardware::CPU.arm?
