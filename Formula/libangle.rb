@@ -18,6 +18,8 @@ class Libangle < Formula
     ENV.prepend_path "PATH", buildpath/"depot_tools"
 
     system "python3", "scripts/bootstrap.py"
+    # Reset the repository to ensure a clean state
+    system "git", "reset", "--hard"
     system "gclient", "sync"
     if Hardware::CPU.arm?
       system "gn", "gen", "angle_build", "--args=is_debug=false target_cpu='arm64'"
