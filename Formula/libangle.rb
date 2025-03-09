@@ -1,5 +1,5 @@
 class Libangle < Formula
-  desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS and Android"
+  desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS, and Android"
   homepage "https://github.com/google/angle"
   url "https://github.com/google/angle.git", using: :git, revision: "df0f7133799ca6aa0d31802b22d919c6197051cf"
   version "20250309.1"
@@ -26,7 +26,7 @@ class Libangle < Formula
       else
         system "gn", "gen", "angle_build", "--args=is_debug=false"
       end
-      system "ninja", "-C", "angle_build"
+      system "autoninja", "-C", "angle_build"
       
       # Install the built libraries
       lib.install Dir["angle_build/*.dylib"]
