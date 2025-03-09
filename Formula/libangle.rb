@@ -16,23 +16,18 @@ class Libangle < Formula
   def install
     resource("depot_tools").stage(buildpath/"depot_tools")
     ENV.prepend_path "PATH", buildpath/"depot_tools"
-    
-    # Install vpython
-    system "python3", "-m", "pip", "install", "vpython"
 
+    # Clone the angle repository if not already present
+    system "git", "clone", "https://chromium.googlesource.com/angle/angle", "."
+    
     system "python3", "scripts/bootstrap.py"
-    system "git", "reset", "--hard"
-    system "git", "clean", "-fdx"
-    system "gclient", "sync", "--force"
-    if Hardware::CPU.arm?
-      system "gn", "gen", "angle_build", "--args=is_debug=false target_cpu='arm64'"
-    else
-      system "gn", "gen", "angle_build", "--args=is_debug=false"
-    end
-    system "autoninja", "-C", "angle_build"
+    system "gclient", "sync"
+    system "git", "checkout", "main"
+    system "gn", "gen", "--args=is_debug=false out/Release"
+    system "autoninja", "-C", "out/Release"
 
     # Install the built libraries
-    lib.install Dir["angle_build/*.dylib"]
+    lib.install Dir["out/Release/*.dylib"]
     include.install Dir["include/*"]
   end
 
