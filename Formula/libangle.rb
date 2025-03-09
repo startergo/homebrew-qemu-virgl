@@ -1,9 +1,10 @@
 class Libangle < Formula
-  desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS and Android"
+  desc "Conformant OpenGL ES implementation for multiple platforms"
   homepage "https://github.com/google/angle"
   url "https://github.com/google/angle.git",
       using:    :git,
-      revision: "fffbc739779a2df56a464fd6853bbfb24bebb5f6"
+      revision: "fffbc739779a2df56a464fd6853bbfb24bebb5f6",
+      submodules: false
   version "2025.03.08.1"
   license "BSD-3-Clause"
 
@@ -13,7 +14,6 @@ class Libangle < Formula
     sha256 cellar: :any, big_sur:       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
   end
 
-  depends_on "meson" => :build
   depends_on "ninja" => :build
 
   resource "depot_tools" do
@@ -27,22 +27,23 @@ class Libangle < Formula
       ENV.prepend_path "PATH", Dir.pwd
     end
 
-    # Create and enter the source/angle directory.
+    # Create the source/angle directory.
     (buildpath/"source/angle").mkpath
     cd "source/angle" do
-      # Initialize an empty repository.
+      # Instead of using the Homebrew fetched repository (which would update submodules),
+      # initialize an empty git repository and fetch only the desired public commit.
       system "git", "init"
-      # Fetch the desired commit from the public repository.
       system "git", "fetch", "https://chromium.googlesource.com/angle/angle", "fffbc739779a2df56a464fd6853bbfb24bebb5f6"
       system "git", "checkout", "FETCH_HEAD"
 
       # Disable depot_tools auto-update.
       ENV["DEPOT_TOOLS_UPDATE"] = "0"
 
-      # Run bootstrap to set up dependencies.
+      # Run bootstrap to set up additional required files.
       system "python3", "scripts/bootstrap.py"
-      # Sync dependencies with the -D flag.
+      # Synchronize dependencies (with -D to remove directories not in DEPS).
       system "gclient", "sync", "-D"
+
       # Generate build files (release build).
       system "gn", "gen", "--args=is_debug=false", "../../build/angle"
     end
