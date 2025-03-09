@@ -19,6 +19,10 @@ class Libangle < Formula
     ohai "Extracting tarball: #{tarball_path}"
     system "tar", "xvf", tarball_path
 
+    # List the contents of the current directory after extraction
+    ohai "Contents of the current directory after extraction:"
+    system "ls", "-l"
+
     # Verify if the extraction was successful
     extracted_dir = Dir.glob("*").find { |f| File.directory?(f) && f.include?("angle") }
     unless extracted_dir
