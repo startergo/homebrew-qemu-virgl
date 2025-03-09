@@ -1,7 +1,9 @@
 class Libangle < Formula
   desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS and Android"
   homepage "https://github.com/google/angle"
-  url "https://github.com/google/angle.git", using: :git, revision: "fffbc739779a2df56a464fd6853bbfb24bebb5f6"
+  url "https://github.com/google/angle.git",
+      using:    :git,
+      revision: "fffbc739779a2df56a464fd6853bbfb24bebb5f6"
   version "2025.03.08.1"
   license "BSD-3-Clause"
 
@@ -20,20 +22,28 @@ class Libangle < Formula
   end
 
   def install
-    # Set environment variable to disable depot_tools auto-update.
-    ENV["DEPOT_TOOLS_UPDATE"] = "0"
-
     # Stage depot_tools resource and prepend its directory to PATH.
     resource("depot_tools").stage do
       ENV.prepend_path "PATH", Dir.pwd
     end
 
-    Dir.chdir("source/angle") do
-      # Run bootstrap.
+    # Create and enter the source/angle directory.
+    (buildpath/"source/angle").mkpath
+    cd "source/angle" do
+      # Initialize an empty repository.
+      system "git", "init"
+      # Fetch the desired commit from the public repository.
+      system "git", "fetch", "https://chromium.googlesource.com/angle/angle", "fffbc739779a2df56a464fd6853bbfb24bebb5f6"
+      system "git", "checkout", "FETCH_HEAD"
+
+      # Disable depot_tools auto-update.
+      ENV["DEPOT_TOOLS_UPDATE"] = "0"
+
+      # Run bootstrap to set up dependencies.
       system "python3", "scripts/bootstrap.py"
       # Sync dependencies with the -D flag.
       system "gclient", "sync", "-D"
-      # Generate build files in ../../build/angle.
+      # Generate build files (release build).
       system "gn", "gen", "--args=is_debug=false", "../../build/angle"
     end
 
@@ -45,7 +55,7 @@ class Libangle < Formula
     lib.install "#{buildpath}/build/angle/libEGL.dylib"
     lib.install "#{buildpath}/build/angle/libGLESv2.dylib"
     lib.install "#{buildpath}/build/angle/libchrome_zlib.dylib"
-    include.install Dir["include/*"]
+    include.install Dir["source/angle/include/*"]
   end
 
   test do
