@@ -11,7 +11,6 @@ class Libangle < Formula
     sha256 cellar: :any, big_sur:       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
   end
 
-  depends_on "python@2" => :build
   depends_on "meson" => :build
   depends_on "ninja" => :build
 
@@ -26,8 +25,8 @@ class Libangle < Formula
       ENV.prepend_path "PATH", Dir.pwd
     end
 
-    # Run bootstrap and sync commands using Python 2.
-    system "python2", "scripts/bootstrap.py"
+    # Run bootstrap and sync commands using Python 3.
+    system "python3", "scripts/bootstrap.py"
     system "gclient", "sync"
 
     build_dir = "angle_build"
