@@ -23,9 +23,9 @@ class Libangle < Formula
   def install
     # Initialize pyenv and set the correct Python version
     ENV.prepend_path "PATH", Formula["pyenv"].opt_prefix/"bin"
-    system "eval", "$(pyenv init --path)"
     system "pyenv", "install", "-s", "2.7.18"
     system "pyenv", "global", "2.7.18"
+    ENV.prepend_path "PATH", "#{ENV["HOME"]}/.pyenv/shims"
 
     # Stage and check out the depot_tools resource
     resource("depot_tools").stage do
