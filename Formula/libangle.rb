@@ -8,21 +8,25 @@ class Libangle < Formula
   def install
     angle_dir = "/Users/macbookpro/Documents/angle/angle"
 
+    # Copy include files to a temporary directory
+    mkdir "include_tmp"
+    cp_r "#{angle_dir}/include/.", "include_tmp"
+
     # Install include files
-    include.install Dir["#{angle_dir}/include/CL/*"]
-    include.install Dir["#{angle_dir}/include/EGL/*"]
-    include.install Dir["#{angle_dir}/include/GLES/*"]
-    include.install Dir["#{angle_dir}/include/GLES2/*"]
-    include.install Dir["#{angle_dir}/include/GLES3/*"]
-    include.install Dir["#{angle_dir}/include/GLSLANG/*"]
-    include.install Dir["#{angle_dir}/include/KHR/*"]
-    include.install Dir["#{angle_dir}/include/WGL/*"]
-    include.install "#{angle_dir}/include/angle_cl.h"
-    include.install "#{angle_dir}/include/angle_gl.h"
-    include.install "#{angle_dir}/include/angle_windowsstore.h"
-    include.install "#{angle_dir}/include/export.h"
-    include.install Dir["#{angle_dir}/include/platform/*"]
-    include.install Dir["#{angle_dir}/include/vulkan/*"]
+    include.install Dir["include_tmp/CL/*"]
+    include.install Dir["include_tmp/EGL/*"]
+    include.install Dir["include_tmp/GLES/*"]
+    include.install Dir["include_tmp/GLES2/*"]
+    include.install Dir["include_tmp/GLES3/*"]
+    include.install Dir["include_tmp/GLSLANG/*"]
+    include.install Dir["include_tmp/KHR/*"]
+    include.install Dir["include_tmp/WGL/*"]
+    include.install "include_tmp/angle_cl.h"
+    include.install "include_tmp/angle_gl.h"
+    include.install "include_tmp/angle_windowsstore.h"
+    include.install "include_tmp/export.h"
+    include.install Dir["include_tmp/platform/*"]
+    include.install Dir["include_tmp/vulkan/*"]
 
     # Install libraries from out/Release
     lib.install "#{angle_dir}/out/Release/libEGL.dylib"
