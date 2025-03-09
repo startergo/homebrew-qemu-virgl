@@ -8,7 +8,10 @@ class Libangle < Formula
   def install
     angle_dir = "/Users/macbookpro/Documents/angle/angle"
 
-    # Copy include files to a temporary directory
+    # Ensure we have read permissions
+    chmod_R "u+r", angle_dir
+
+    # Copy include files to the buildpath to handle permissions
     mkdir "include_tmp"
     cp_r "#{angle_dir}/include/.", "include_tmp"
 
@@ -28,14 +31,22 @@ class Libangle < Formula
     include.install Dir["include_tmp/platform/*"]
     include.install Dir["include_tmp/vulkan/*"]
 
-    # Install libraries from out/Release
-    lib.install "#{angle_dir}/out/Release/libEGL.dylib"
-    lib.install "#{angle_dir}/out/Release/libGLESv2.dylib"
+    # Copy library files to the buildpath to handle permissions
+    mkdir "lib_tmp"
+    cp "#{angle_dir}/out/Release/libEGL.dylib", "lib_tmp"
+    cp "#{angle_dir}/out/Release/libGLESv2.dylib", "lib_tmp"
 
-    # Install other files
-    prefix.install "#{angle_dir}/AUTHORS"
-    prefix.install "#{angle_dir}/LICENSE"
-    prefix.install "#{angle_dir}/README.md"
+    # Install libraries from temporary directory
+    lib.install Dir["lib_tmp/*"]
+
+    # Copy other files to the buildpath to handle permissions
+    mkdir "prefix_tmp"
+    cp "#{angle_dir}/AUTHORS", "prefix_tmp"
+    cp "#{angle_dir}/LICENSE", "prefix_tmp"
+    cp "#{angle_dir}/README.md", "prefix_tmp"
+
+    # Install other files from temporary directory
+    prefix.install Dir["prefix_tmp/*"]
   end
 
   test do
