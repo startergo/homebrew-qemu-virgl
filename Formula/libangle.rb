@@ -43,22 +43,22 @@ class Libangle < Formula
       gn_args += ' target_cpu="arm64"' if Hardware::CPU.arm?
       ohai "Running gn gen with arguments: #{gn_args}"
 
-      # Run gn gen with detailed logging
-      gn_output = `gn gen . #{gn_args} 2>&1`
+      # Specify the output directory for gn
+      gn_output = `gn gen out/Default #{gn_args} 2>&1`
       puts gn_output
       raise "gn gen failed!" unless $?.success?
 
       # Build the project
       ohai "Running ninja build"
-      ninja_output = `ninja -C . 2>&1`
+      ninja_output = `ninja -C out/Default 2>&1`
       puts ninja_output
       raise "ninja build failed!" unless $?.success?
 
       # Install the libraries
-      lib.install "libabsl.dylib"
-      lib.install "libEGL.dylib"
-      lib.install "libGLESv2.dylib"
-      lib.install "libchrome_zlib.dylib"
+      lib.install "out/Default/libabsl.dylib"
+      lib.install "out/Default/libEGL.dylib"
+      lib.install "out/Default/libGLESv2.dylib"
+      lib.install "out/Default/libchrome_zlib.dylib"
 
       # Install the headers
       include.install Pathname.glob("../include/*")
