@@ -1,4 +1,4 @@
-\class Libangle < Formula
+class Libangle < Formula
 desc "ANGLE - Almost Native Graphics Layer Engine"
 homepage "https://angleproject.org/"
 url "https://chromium.googlesource.com/angle/angle/+archive/refs/heads/main.tar.gz"
