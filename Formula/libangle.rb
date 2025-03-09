@@ -36,33 +36,30 @@ class Libangle < Formula
     # Ensure the correct PATH is used
     ENV.prepend_path "PATH", "/Users/macbookpro/depot_tools"
 
-    # Create the build directory
-    mkdir "out/Default" do
-      # Generate the build files
-      gn_args = "--args=use_custom_libcxx=false treat_warnings_as_errors=false"
-      gn_args += ' target_cpu="arm64"' if Hardware::CPU.arm?
-      ohai "Running gn gen with arguments: #{gn_args}"
+    # Generate the build files
+    gn_args = "--args=use_custom_libcxx=false treat_warnings_as_errors=false"
+    gn_args += ' target_cpu="arm64"' if Hardware::CPU.arm?
+    ohai "Running gn gen with arguments: #{gn_args}"
 
-      # Specify the output directory for gn
-      gn_output = `gn gen out/Default #{gn_args} 2>&1`
-      puts gn_output
-      raise "gn gen failed!" unless $?.success?
+    # Specify the output directory for gn
+    gn_output = `gn gen out/Default #{gn_args} 2>&1`
+    puts gn_output
+    raise "gn gen failed!" unless $?.success?
 
-      # Build the project
-      ohai "Running ninja build"
-      ninja_output = `ninja -C out/Default 2>&1`
-      puts ninja_output
-      raise "ninja build failed!" unless $?.success?
+    # Build the project
+    ohai "Running ninja build"
+    ninja_output = `ninja -C out/Default 2>&1`
+    puts ninja_output
+    raise "ninja build failed!" unless $?.success?
 
-      # Install the libraries
-      lib.install "out/Default/libabsl.dylib"
-      lib.install "out/Default/libEGL.dylib"
-      lib.install "out/Default/libGLESv2.dylib"
-      lib.install "out/Default/libchrome_zlib.dylib"
+    # Install the libraries
+    lib.install "out/Default/libabsl.dylib"
+    lib.install "out/Default/libEGL.dylib"
+    lib.install "out/Default/libGLESv2.dylib"
+    lib.install "out/Default/libchrome_zlib.dylib"
 
-      # Install the headers
-      include.install Pathname.glob("../../include/*")
-    end
+    # Install the headers
+    include.install Pathname.glob("include/*")
   end
 
   test do
