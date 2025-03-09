@@ -14,34 +14,30 @@ class Libangle < Formula
   depends_on "meson" => :build
   depends_on "ninja" => :build
   depends_on "python@3.9" => :build
-  depends_on "pyenv" => :build
 
   resource "depot_tools" do
     url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", revision: "dc86a4b9044f9243886ca0da0c1753820ac51f45"
   end
 
   def install
-    # Initialize pyenv and set the correct Python version
-    ENV.prepend_path "PATH", Formula["pyenv"].opt_prefix/"bin"
-    system "pyenv", "install", "-s", "2.7.18"
-    system "pyenv", "global", "2.7.18"
-    ENV.prepend_path "PATH", "#{ENV["HOME"]}/.pyenv/shims"
+    # Use Homebrew's Python 3.9
+    ENV.prepend_path "PATH", Formula["python@3.9"].opt_bin
 
     # Stage and check out the depot_tools resource
     resource("depot_tools").stage do
       ENV.prepend_path "PATH", Dir.pwd
 
-      # Full path to python2.7 from pyenv
-      python2_7_path = "#{ENV["HOME"]}/.pyenv/versions/2.7.18/bin/python2.7"
+      # Full path to python3.9
+      python3_9_path = "#{Formula["python@3.9"].opt_bin}/python3.9"
 
-      # Diagnostic step: Check if python2.7 exists
-      system "ls", "-l", python2_7_path
+      # Diagnostic step: Check if python3.9 exists
+      system "ls", "-l", python3_9_path
 
       # Diagnostic step: Check if bootstrap.py exists in the depot_tools directory
       system "ls", "-l", "scripts/bootstrap.py"
 
-      # Run the bootstrap script using python2.7
-      system python2_7_path, "scripts/bootstrap.py"
+      # Run the bootstrap script using python3.9
+      system python3_9_path, "scripts/bootstrap.py"
       
       # Sync the ANGLE repository using gclient
       system "gclient", "sync"
