@@ -11,20 +11,38 @@ class Libangle < Formula
   depends_on "python@3.11" => :build
 
   def install
+    # Get the path of the cached tarball
+    tarball_path = cached_download
+    ohai "Using cached download: #{tarball_path}"
+
     # Extract the tarball
-    system "tar", "xvf", "main.tar.gz"
+    ohai "Extracting tarball: #{tarball_path}"
+    system "tar", "xvf", tarball_path
+
+    # Verify if the extraction was successful
+    extracted_dir = Dir.glob("*").find { |f| File.directory?(f) && f.include?("angle") }
+    unless extracted_dir
+      odie "Tarball extraction failed! No directory found containing 'angle'"
+    end
+    ohai "Extraction successful, found directory: #{extracted_dir}"
 
     # Create the build directory
     mkdir "build" do
       # Generate the build files
-      if Hardware::CPU.arm?
-        system "gn", "gen", "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", "../"
-      else
-        system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "../"
+      gn_args = "--args=use_custom_libcxx=false treat_warnings_as_errors=false"
+      gn_args += ' target_cpu="arm64"' if Hardware::CPU.arm?
+      ohai "Running gn gen with arguments: #{gn_args}"
+      system "gn", "gen", gn_args, "../" do |status, output|
+        puts output
+        raise "gn gen failed!" unless status.success?
       end
 
       # Build the project
-      system "ninja", "-C", "."
+      ohai "Running ninja build"
+      system "ninja", "-C", "." do |status, output|
+        puts output
+        raise "ninja build failed!" unless status.success?
+      end
 
       # Install the libraries
       lib.install "libabsl.dylib"
