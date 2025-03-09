@@ -2,7 +2,7 @@ class Libangle < Formula
   desc "ANGLE - Almost Native Graphics Layer Engine"
   homepage "https://angleproject.org/"
   url "https://chromium.googlesource.com/angle/angle/+archive/refs/heads/main.tar.gz"
-  sha256 "bf2977405d80b6ebf75cb71908ac883c7b4da6307806c3800795a9a0eaa88940"
+  sha256 "3a8c08be8e91adf590d603aed6976c6c9c515ea549dcc01a93b413b514aa59d1"
   version "main"  # Explicitly set the version attribute
   license "BSD-3-Clause"
 
