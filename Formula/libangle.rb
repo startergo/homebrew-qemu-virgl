@@ -2,7 +2,7 @@ class Libangle < Formula
   desc "Conformant OpenGL ES implementation for multiple platforms"
   homepage "https://github.com/google/angle"
   url "https://github.com/google/angle.git",
-      using:    :git,
+      using: :git,
       revision: "fffbc739779a2df56a464fd6853bbfb24bebb5f6",
       submodules: false
   version "2025.03.08.1"
@@ -22,16 +22,15 @@ class Libangle < Formula
   end
 
   def install
-    # Stage depot_tools resource and prepend its directory to PATH.
+    # Stage depot_tools and add its directory to PATH.
     resource("depot_tools").stage do
       ENV.prepend_path "PATH", Dir.pwd
     end
 
-    # Create the source/angle directory.
+    # Create the source/angle directory and enter it.
     (buildpath/"source/angle").mkpath
     cd "source/angle" do
-      # Instead of using the Homebrew fetched repository (which would update submodules),
-      # initialize an empty git repository and fetch only the desired public commit.
+      # Initialize an empty repository and fetch the desired commit.
       system "git", "init"
       system "git", "fetch", "https://chromium.googlesource.com/angle/angle", "fffbc739779a2df56a464fd6853bbfb24bebb5f6"
       system "git", "checkout", "FETCH_HEAD"
@@ -39,23 +38,23 @@ class Libangle < Formula
       # Disable depot_tools auto-update.
       ENV["DEPOT_TOOLS_UPDATE"] = "0"
 
-      # Run bootstrap to set up additional required files.
+      # Run the bootstrap script.
       system "python3", "scripts/bootstrap.py"
-      # Synchronize dependencies (with -D to remove directories not in DEPS).
+      # Synchronize dependencies without unwanted submodules.
       system "gclient", "sync", "-D"
-
-      # Generate build files (release build).
+      # Generate build files with is_debug=false.
       system "gn", "gen", "--args=is_debug=false", "../../build/angle"
     end
 
     # Build ANGLE using ninja.
     system "ninja", "-C", "build/angle"
 
-    # Install the built libraries and headers.
+    # Install the built libraries.
     lib.install "#{buildpath}/build/angle/libabsl.dylib"
     lib.install "#{buildpath}/build/angle/libEGL.dylib"
     lib.install "#{buildpath}/build/angle/libGLESv2.dylib"
     lib.install "#{buildpath}/build/angle/libchrome_zlib.dylib"
+    # Install the headers.
     include.install Dir["source/angle/include/*"]
   end
 
