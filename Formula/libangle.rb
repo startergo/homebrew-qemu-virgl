@@ -31,8 +31,7 @@ class Libangle < Formula
     ENV.prepend_path "PATH", depot_tools_dir
 
     # Detect the extracted source directory from the tarball.
-    source_dir = Dir["angle-*"].first
-    source_dir = "." if source_dir.nil? || source_dir.empty?
+    source_dir = Dir["angle-*"].first || "."
     odie "Source directory not found" unless File.directory?(source_dir)
 
     cd source_dir do
@@ -40,16 +39,16 @@ class Libangle < Formula
       ENV["DEPOT_TOOLS_UPDATE"] = "0"
       # Run ANGLE's bootstrap script.
       system "python3", "scripts/bootstrap.py"
-      # Synchronize dependencies using gclient.
-      system "gclient", "sync", "-D"
-      # Generate build files for a release build using gn.
+      # Synchronize dependencies with additional --force flag.
+      system "gclient", "sync", "-D", "--force"
+      # Generate build files for a release build.
       system "gn", "gen", "--args=is_debug=false", "../build/angle"
     end
 
     # Build ANGLE using ninja.
     system "ninja", "-C", "build/angle"
 
-    # Install the built libraries.
+    # Install the required built libraries.
     lib.install "#{buildpath}/build/angle/libabsl.dylib"
     lib.install "#{buildpath}/build/angle/libEGL.dylib"
     lib.install "#{buildpath}/build/angle/libGLESv2.dylib"
