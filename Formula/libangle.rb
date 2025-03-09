@@ -20,30 +20,31 @@ class Libangle < Formula
   end
 
   def install
+    # Set environment variable to disable depot_tools auto-update.
+    ENV["DEPOT_TOOLS_UPDATE"] = "0"
+
     # Stage depot_tools resource and prepend its directory to PATH.
     resource("depot_tools").stage do
       ENV.prepend_path "PATH", Dir.pwd
     end
 
-    # Run bootstrap and sync commands using Python 3.
-    system "python3", "scripts/bootstrap.py"
-    system "gclient", "sync"
+    Dir.chdir("source/angle") do
+      # Run bootstrap.
+      system "python3", "scripts/bootstrap.py"
+      # Sync dependencies with the -D flag.
+      system "gclient", "sync", "-D"
+      # Generate build files in ../../build/angle.
+      system "gn", "gen", "--args=is_debug=false", "../../build/angle"
+    end
 
-    build_dir = "angle_build"
-    args = if Hardware::CPU.arm?
-             "use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false"
-           else
-             "use_custom_libcxx=false treat_warnings_as_errors=false"
-           end
-
-    system "gn", "gen", "--args=#{args}", build_dir
-    system "ninja", "-C", build_dir
+    # Build ANGLE using ninja.
+    system "ninja", "-C", "build/angle"
 
     # Install the built libraries and headers.
-    lib.install "#{build_dir}/libabsl.dylib"
-    lib.install "#{build_dir}/libEGL.dylib"
-    lib.install "#{build_dir}/libGLESv2.dylib"
-    lib.install "#{build_dir}/libchrome_zlib.dylib"
+    lib.install "#{buildpath}/build/angle/libabsl.dylib"
+    lib.install "#{buildpath}/build/angle/libEGL.dylib"
+    lib.install "#{buildpath}/build/angle/libGLESv2.dylib"
+    lib.install "#{buildpath}/build/angle/libchrome_zlib.dylib"
     include.install Dir["include/*"]
   end
 
