@@ -27,10 +27,10 @@ class Libangle < Formula
       ENV.prepend_path "PATH", Dir.pwd
     end
 
-    # Create the source/angle directory and enter it.
+    # Create and enter the source/angle directory.
     (buildpath/"source/angle").mkpath
     cd "source/angle" do
-      # Initialize an empty repository and fetch the desired commit.
+      # Initialize an empty repository and fetch the desired commit
       system "git", "init"
       system "git", "fetch", "https://chromium.googlesource.com/angle/angle", "fffbc739779a2df56a464fd6853bbfb24bebb5f6"
       system "git", "checkout", "FETCH_HEAD"
@@ -38,23 +38,22 @@ class Libangle < Formula
       # Disable depot_tools auto-update.
       ENV["DEPOT_TOOLS_UPDATE"] = "0"
 
-      # Run the bootstrap script.
+      # Run bootstrap to set up additional required files.
       system "python3", "scripts/bootstrap.py"
-      # Synchronize dependencies without unwanted submodules.
+      # Synchronize dependencies with the -D flag.
       system "gclient", "sync", "-D"
-      # Generate build files with is_debug=false.
+      # Generate build files with a release build (is_debug=false).
       system "gn", "gen", "--args=is_debug=false", "../../build/angle"
     end
 
     # Build ANGLE using ninja.
     system "ninja", "-C", "build/angle"
 
-    # Install the built libraries.
+    # Install only the desired built libraries and headers.
     lib.install "#{buildpath}/build/angle/libabsl.dylib"
     lib.install "#{buildpath}/build/angle/libEGL.dylib"
     lib.install "#{buildpath}/build/angle/libGLESv2.dylib"
     lib.install "#{buildpath}/build/angle/libchrome_zlib.dylib"
-    # Install the headers.
     include.install Dir["source/angle/include/*"]
   end
 
