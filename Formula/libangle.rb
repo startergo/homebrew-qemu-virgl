@@ -23,7 +23,7 @@ class Libangle < Formula
   def install
     resource("depot_tools").stage do
       ENV.prepend_path "PATH", Dir.pwd
-      system "pyenv", "global", "2.7.18"
+      ENV.prepend_path "PATH", "#{ENV["HOME"]}/.pyenv/shims"
       system "python2.7", "scripts/bootstrap.py"
       system "gclient", "sync"
     end
