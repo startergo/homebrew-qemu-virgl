@@ -22,9 +22,12 @@ class Libangle < Formula
 
   def install
     resource("depot_tools").stage do
-      ENV.prepend_path "PATH", Dir.pwd
       ENV.prepend_path "PATH", "#{ENV["HOME"]}/.pyenv/shims"
-      
+      ENV.prepend_path "PATH", Dir.pwd
+
+      # Set PYENV_VERSION to ensure the correct Python version is used
+      ENV["PYENV_VERSION"] = "2.7.18"
+
       # Diagnostic step: Check if python2.7 exists
       system "which", "python2.7"
       
