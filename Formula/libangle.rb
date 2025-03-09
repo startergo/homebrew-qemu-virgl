@@ -23,7 +23,7 @@ class Libangle < Formula
   end
 
   def install
-    # Stage depot_tools into buildpath/depot_tools so that gclient is available.
+    # Stage depot_tools into buildpath/depot_tools so that gclient becomes available.
     depot_tools_dir = buildpath/"depot_tools"
     resource("depot_tools").stage do
       depot_tools_dir.install Dir["*"]
@@ -41,16 +41,28 @@ class Libangle < Formula
       # Run the bootstrap script.
       system "python3", "scripts/bootstrap.py"
 
-      # Remove any existing _bad_scm directories if present.
+      # Pre-clean any _bad_scm directories (if present).
       Dir.glob("_bad_scm*").each do |bad_dir|
         ohai "Removing stale directory: #{bad_dir}"
         FileUtils.rm_rf(bad_dir)
       end
 
-      # Run gclient sync with force flags and additional clean-up flag.
-      system "gclient", "sync", "-D", "--force", "--delete_unversioned_trees"
+      # Run gclient sync with force and delete unversioned trees.
+      sync_cmd = "gclient sync -D --force --delete_unversioned_trees"
 
-      # Generate build files for a release build.
+      if !system(sync_cmd)
+        ohai "gclient sync failed. Cleaning nested _bad_scm directories and retrying..."
+        # Remove any nested _bad_scm directories recursively.
+        Dir.glob("**/_bad_scm**", File::FNM_DOTMATCH).each do |dir|
+          next if [".", ".."].include?(File.basename(dir))
+          ohai "Removing directory: #{dir}"
+          FileUtils.rm_rf(dir)
+        end
+        # Retry sync.
+        system(sync_cmd) or odie "gclient sync failed after cleanup"
+      end
+
+      # Generate build files for a release build with GN.
       system "gn", "gen", "--args=is_debug=false", "../build/angle"
     end
 
@@ -62,7 +74,7 @@ class Libangle < Formula
     lib.install "#{buildpath}/build/angle/libEGL.dylib"
     lib.install "#{buildpath}/build/angle/libGLESv2.dylib"
     lib.install "#{buildpath}/build/angle/libchrome_zlib.dylib"
-    # Install the header files.
+    # Install header files.
     include.install Dir["#{source_dir}/include/*"]
   end
 
