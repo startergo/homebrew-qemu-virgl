@@ -1,8 +1,9 @@
 class Libangle < Formula
   desc "Conformant OpenGL ES implementation for multiple platforms"
   homepage "https://github.com/google/angle"
-  # Use the GitHub tarball for a specific commit. Tarballs do not include submodules.
+  # Use the GitHub tarball so that submodules are not included.
   url "https://github.com/google/angle/archive/fffbc739779a2df56a464fd6853bbfb24bebb5f6.tar.gz"
+  sha256 "9e777ab3c55d89172c49c51786c9fc9ed71e9b12b05f0b0e8d16cb02cdc3f28b"
   version "2025.03.08.1"
   license "BSD-3-Clause"
   head "https://github.com/google/angle.git", branch: "master"
@@ -27,16 +28,16 @@ class Libangle < Formula
       ENV.prepend_path "PATH", Dir.pwd
     end
 
-    # Find the extracted source directory (tarballs are extracted into a directory that starts with "angle-").
-    source_dir = Dir["angle-*"].first
-    raise "Source directory not found" unless source_dir
+    # Hardcode the extracted source directory name.
+    source_dir = "angle-fffbc739779a2df56a464fd6853bbfb24bebb5f6"
+    raise "Source directory not found" unless File.directory?(source_dir)
 
     cd source_dir do
       # Disable depot_tools auto-update.
       ENV["DEPOT_TOOLS_UPDATE"] = "0"
-      # Run the bootstrap script to set up additional required files.
+      # Run ANGLE's bootstrap script.
       system "python3", "scripts/bootstrap.py"
-      # Synchronize dependencies (with the -D flag to remove directories not in DEPS).
+      # Synchronize dependencies (using the -D flag to remove unneeded directories).
       system "gclient", "sync", "-D"
       # Generate build files for a release build (is_debug=false).
       system "gn", "gen", "--args=is_debug=false", "../build/angle"
@@ -50,7 +51,7 @@ class Libangle < Formula
     lib.install "#{buildpath}/build/angle/libEGL.dylib"
     lib.install "#{buildpath}/build/angle/libGLESv2.dylib"
     lib.install "#{buildpath}/build/angle/libchrome_zlib.dylib"
-    # Install headers from the source directory.
+    # Install headers.
     include.install Dir["#{source_dir}/include/*"]
   end
 
