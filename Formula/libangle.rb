@@ -7,11 +7,11 @@ class Libangle < Formula
 
   bottle do
     root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20250309.1"
-    sha256 sequoia: "748d93eeabbc36f740e84338393deea0167c49da70e069708c54f5767003d12f"
-    # Placeholder SHA256 values for other macOS versions
-    sha256 monterey: "placeholder-sha256-for-monterey"
-    sha256 ventura: "placeholder-sha256-for-ventura"
-    sha256 sonoma: "placeholder-sha256-for-sonoma"
+    sha256 cellar: :any, sequoia: "748d93eeabbc36f740e84338393deea0167c49da70e069708c54f5767003d12f"
+    # Placeholder SHA256 values for other macOS versions, replace these with actual values
+    sha256 cellar: :any, monterey: "placeholder-sha256-for-monterey"
+    sha256 cellar: :any, ventura: "placeholder-sha256-for-ventura"
+    sha256 cellar: :any, sonoma: "placeholder-sha256-for-sonoma"
   end
 
   depends_on "cmake" => :build
