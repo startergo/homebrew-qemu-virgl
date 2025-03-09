@@ -21,11 +21,15 @@ class Libangle < Formula
   end
 
   def install
+    # Initialize pyenv and set the correct Python version
+    ENV.prepend_path "PATH", Formula["pyenv"].opt_prefix/"bin"
+    system "pyenv", "init", "--path"
+    system "pyenv", "install", "2.7.18" unless system "pyenv", "versions", "--bare", "|", "grep", "-q", "^2.7.18$"
+    system "pyenv", "global", "2.7.18"
+
     # Stage and check out the depot_tools resource
     resource("depot_tools").stage do
-      # Add the current directory (containing depot_tools) to the PATH
       ENV.prepend_path "PATH", Dir.pwd
-      ENV.prepend_path "PATH", "#{ENV["HOME"]}/.pyenv/shims"
 
       # Full path to python2.7 from pyenv
       python2_7_path = "#{ENV["HOME"]}/.pyenv/versions/2.7.18/bin/python2.7"
