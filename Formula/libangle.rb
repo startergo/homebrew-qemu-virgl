@@ -36,6 +36,9 @@ class Libangle < Formula
     # Ensure the correct PATH is used
     ENV.prepend_path "PATH", "/Users/macbookpro/depot_tools"
 
+    # Create the output directory for gn
+    mkdir_p "out/Default"
+
     # Generate the build files
     gn_args = "--args=use_custom_libcxx=false treat_warnings_as_errors=false"
     gn_args += ' target_cpu="arm64"' if Hardware::CPU.arm?
