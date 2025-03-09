@@ -9,6 +9,11 @@ class Libangle < Formula
   depends_on "ninja" => :build
   depends_on "python@3.11" => :build
 
+  resource "bootstrap_script" do
+    url "https://example.com/bootstrap.sh"
+    sha256 "placeholder_for_actual_sha256"
+  end
+
   def install
     # Get the path of the cached tarball
     tarball_path = cached_download
@@ -35,28 +40,26 @@ class Libangle < Formula
     # Ensure the correct PATH is used
     ENV.prepend_path "PATH", "/Users/macbookpro/depot_tools"
 
-    # Synchronize the dependencies using gclient
-    ohai "Running gclient sync -D"
-    system "gclient", "sync", "-D"
+    # Create a custom script to handle gclient sync and gn gen
+    (buildpath/"bootstrap.sh").write <<~EOS
+      #!/bin/bash
+      set -e
+      echo "Running gclient sync -D"
+      gclient sync -D
+      echo "Running gn gen with args: --args=is_debug=false target_cpu=\\\"arm64\\\""
+      gn gen out/Default --args="is_debug=false target_cpu=\\\"arm64\\\""
+    EOS
+    chmod "+x", buildpath/"bootstrap.sh"
 
-    # Generate the build files
-    gn_args = "--args=is_debug=false"
-    ohai "Running gn gen with arguments: #{gn_args}"
-
-    # Specify the output directory for gn
-    build_dir = "../../build/angle"
-    gn_output = `gn gen #{build_dir} #{gn_args} 2>&1`
-    puts gn_output
-    raise "gn gen failed!" unless $?.success?
+    # Run the custom script
+    system "./bootstrap.sh"
 
     # Build the project
     ohai "Running ninja build"
-    ninja_output = `ninja -C #{build_dir} 2>&1`
-    puts ninja_output
-    raise "ninja build failed!" unless $?.success?
+    system "ninja", "-C", "out/Default"
 
     # Install the libraries
-    lib.install Dir["#{build_dir}/lib*.dylib"]
+    lib.install Dir["out/Default/lib*.dylib"]
 
     # Install the headers
     include.install Dir["include/*"]
