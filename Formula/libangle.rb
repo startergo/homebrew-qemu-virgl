@@ -1,7 +1,7 @@
 class Libangle < Formula
   desc "Conformant OpenGL ES implementation for multiple platforms"
   homepage "https://github.com/google/angle"
-  # Use the GitHub tarball (which does not include submodules) to avoid internal submodule issues.
+  # Use the GitHub tarball to avoid submodule issues.
   url "https://github.com/google/angle/archive/fffbc739779a2df56a464fd6853bbfb24bebb5f6.tar.gz"
   sha256 "9e777ab3c55d89172c49c51786c9fc9ed71e9b12b05f0b0e8d16cb02cdc3f28b"
   version "2025.03.08.1"
@@ -23,16 +23,16 @@ class Libangle < Formula
   end
 
   def install
-    # Stage depot_tools and prepend its path.
+    # Stage depot_tools into buildpath/depot_tools so that gclient is available.
+    depot_tools_dir = buildpath/"depot_tools"
     resource("depot_tools").stage do
-      ENV.prepend_path "PATH", Dir.pwd
+      depot_tools_dir.install Dir["*"]
     end
+    ENV.prepend_path "PATH", depot_tools_dir
 
     # Detect the extracted source directory from the tarball.
     source_dir = Dir["angle-*"].first
-    # If not found, assume the tarball did not create a subdirectory and use the current directory.
     source_dir = "." if source_dir.nil? || source_dir.empty?
-
     odie "Source directory not found" unless File.directory?(source_dir)
 
     cd source_dir do
@@ -40,16 +40,16 @@ class Libangle < Formula
       ENV["DEPOT_TOOLS_UPDATE"] = "0"
       # Run ANGLE's bootstrap script.
       system "python3", "scripts/bootstrap.py"
-      # Synchronize dependencies (using '-D' to remove directories not in DEPS).
+      # Synchronize dependencies using gclient.
       system "gclient", "sync", "-D"
-      # Generate build files for a release build.
+      # Generate build files for a release build using gn.
       system "gn", "gen", "--args=is_debug=false", "../build/angle"
     end
 
-    # Build ANGLE with ninja.
+    # Build ANGLE using ninja.
     system "ninja", "-C", "build/angle"
 
-    # Install only the needed libraries.
+    # Install the built libraries.
     lib.install "#{buildpath}/build/angle/libabsl.dylib"
     lib.install "#{buildpath}/build/angle/libEGL.dylib"
     lib.install "#{buildpath}/build/angle/libGLESv2.dylib"
