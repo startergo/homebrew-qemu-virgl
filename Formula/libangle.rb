@@ -14,26 +14,22 @@ class Libangle < Formula
   end
 
   def install
+    resource("depot_tools").stage(buildpath/"depot_tools")
     ENV.prepend_path "PATH", buildpath/"depot_tools"
 
-    resource("depot_tools").stage do
-      mkdir "build" do
-        path = ENV["PATH"]
-        ohai "PATH is set to: #{path}" # This will print the PATH variable to the console
-
-        system "python3", "scripts/bootstrap.py"
-        system "gclient", "sync"
-        if Hardware::CPU.arm?
-          system "gn", "gen", "angle_build", "--args=is_debug=false target_cpu='arm64'"
-        else
-          system "gn", "gen", "angle_build", "--args=is_debug=false"
-        end
-        system "ninja", "-C", "angle_build"
-        
-        # Install the built libraries
-        lib.install Dir["angle_build/*.dylib"]
-        include.install Dir["include/*"]
+    mkdir "build" do
+      system "python3", "scripts/bootstrap.py"
+      system "gclient", "sync"
+      if Hardware::CPU.arm?
+        system "gn", "gen", "angle_build", "--args=is_debug=false target_cpu='arm64'"
+      else
+        system "gn", "gen", "angle_build", "--args=is_debug=false"
       end
+      system "ninja", "-C", "angle_build"
+      
+      # Install the built libraries
+      lib.install Dir["angle_build/*.dylib"]
+      include.install Dir["include/*"]
     end
   end
 
