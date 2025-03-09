@@ -14,8 +14,10 @@ class Libangle < Formula
   depends_on "cmake" => :build
 
   def install
-    system "cmake", ".", *std_cmake_args, "-DANGLE_ENABLE_VULKAN=OFF"
-    system "make", "install"
+    mkdir "build" do
+      system "cmake", "..", *std_cmake_args, "-DANGLE_ENABLE_VULKAN=OFF"
+      system "make", "install"
+    end
   end
 
   test do
