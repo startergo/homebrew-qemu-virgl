@@ -11,9 +11,6 @@ class Libangle < Formula
   depends_on "python@3.11" => :build
 
   def install
-    # Download the tarball and save it
-    system "curl", "-LO", url
-
     # Extract the tarball
     system "tar", "xvf", "main.tar.gz"
 
