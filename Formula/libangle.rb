@@ -20,42 +20,28 @@ class Libangle < Formula
   end
 
   def install
-    mkdir "build" do
-      resource("depot_tools").stage do
-        path = PATH.new(ENV["PATH"], Dir.pwd)
-        with_env(PATH: path) do
-          Dir.chdir(buildpath)
+    resource("depot_tools").stage do
+      ENV.prepend_path "PATH", Dir.pwd
+      system "python3", "scripts/bootstrap.py"
+      system "gclient", "sync"
+    end
 
-          system "python3", "scripts/bootstrap.py"
-          system "gclient", "sync"
-          if Hardware::CPU.arm?
-            system "gn", "gen", \
-              "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", \
-              "./angle_build"
-          else
-            system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "./angle_build"
-          end
-          system "ninja", "-C", "angle_build"
-          lib.install "angle_build/libabsl.dylib"
-          lib.install "angle_build/libEGL.dylib"
-          lib.install "angle_build/libGLESv2.dylib"
-          lib.install "angle_build/libchrome_zlib.dylib"
-          include.install Pathname.glob("include/*")
-        end
+    mkdir "build" do
+      if Hardware::CPU.arm?
+        system "gn", "gen", "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", "../angle_build"
+      else
+        system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "../angle_build"
       end
+      system "ninja", "-C", "../angle_build"
+      lib.install "../angle_build/libabsl.dylib"
+      lib.install "../angle_build/libEGL.dylib"
+      lib.install "../angle_build/libGLESv2.dylib"
+      lib.install "../angle_build/libchrome_zlib.dylib"
+      include.install Pathname.glob("include/*")
     end
   end
 
   test do
-    # `test do` will create, run in and delete a temporary directory.
-    #
-    # This test will fail and we won't accept that! For Homebrew/homebrew-core
-    # this will need to be a test that verifies the functionality of the
-    # software. Run the test with `brew test libangle`. Options passed
-    # to `brew install` such as `--HEAD` also need to be provided to `brew test`.
-    #
-    # The installed folder is not in the path, so use the entire path to any
-    # executables being tested: `system "#{bin}/program", "do", "something"`.
     system "true"
   end
 end
