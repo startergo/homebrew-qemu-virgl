@@ -11,22 +11,20 @@ class Libangle < Formula
   depends_on "python@3.11" => :build
 
   def install
-    # Get the path of the cached tarball
-    tarball_path = cached_download
-
     # Extract the tarball
-    system "tar", "xvf", tarball_path
+    system "tar", "xvf", "main.tar.gz"
 
     # Create the build directory
     mkdir "build" do
       # Generate the build files
-      gn_args = "--args=use_custom_libcxx=false treat_warnings_as_errors=false"
-      gn_args += ' target_cpu="arm64"' if Hardware::CPU.arm?
-
-      system "gn", "gen", gn_args, "../" or raise "gn gen failed!"
+      if Hardware::CPU.arm?
+        system "gn", "gen", "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", "../"
+      else
+        system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "../"
+      end
 
       # Build the project
-      system "ninja", "-C", "." or raise "ninja build failed!"
+      system "ninja", "-C", "."
 
       # Install the libraries
       lib.install "libabsl.dylib"
