@@ -35,26 +35,27 @@ class Libangle < Formula
     # Ensure the correct PATH is used
     ENV.prepend_path "PATH", "/Users/macbookpro/depot_tools"
 
-    # Create a custom script to handle gclient sync and gn gen
-    (buildpath/"bootstrap.sh").write <<~EOS
-      #!/bin/bash
-      set -e
-      echo "Running gclient sync -D"
-      gclient sync -D
-      echo "Running gn gen with args: --args=is_debug=false target_cpu=\\\"arm64\\\""
-      gn gen out/Default --args="is_debug=false target_cpu=\\\"arm64\\\""
-    EOS
-    chmod "+x", buildpath/"bootstrap.sh"
+    # Create the output directory for gn
+    build_dir = File.join(Dir.pwd, "out/Default")
+    mkdir_p build_dir
 
-    # Run the custom script
-    system "./bootstrap.sh"
+    # Generate the build files
+    gn_args = "--args=is_debug=false target_cpu=\"arm64\""
+    ohai "Running gn gen with arguments: #{gn_args}"
+
+    # Specify the absolute output directory for gn
+    gn_output = `gn gen #{build_dir} #{gn_args} 2>&1`
+    puts gn_output
+    raise "gn gen failed!" unless $?.success?
 
     # Build the project
     ohai "Running ninja build"
-    system "ninja", "-C", "out/Default"
+    ninja_output = `ninja -C #{build_dir} 2>&1`
+    puts ninja_output
+    raise "ninja build failed!" unless $?.success?
 
     # Install the libraries
-    lib.install Dir["out/Default/lib*.dylib"]
+    lib.install Dir["#{build_dir}/lib*.dylib"]
 
     # Install the headers
     include.install Dir["include/*"]
