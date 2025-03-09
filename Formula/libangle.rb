@@ -1,7 +1,7 @@
 class Libangle < Formula
   desc "Conformant OpenGL ES implementation for multiple platforms"
   homepage "https://github.com/google/angle"
-  # Use the GitHub tarball for the specific commit. Tarballs do not include .git info or submodules.
+  # Use the GitHub tarball for a specific commit. Tarballs do not include submodules.
   url "https://github.com/google/angle/archive/fffbc739779a2df56a464fd6853bbfb24bebb5f6.tar.gz"
   version "2025.03.08.1"
   license "BSD-3-Clause"
@@ -27,28 +27,31 @@ class Libangle < Formula
       ENV.prepend_path "PATH", Dir.pwd
     end
 
-    # The tarball extracts into a directory named:
-    # "angle-fffbc739779a2df56a464fd6853bbfb24bebb5f6"
-    cd "angle-fffbc739779a2df56a464fd6853bbfb24bebb5f6" do
+    # Find the extracted source directory (tarballs are extracted into a directory that starts with "angle-").
+    source_dir = Dir["angle-*"].first
+    raise "Source directory not found" unless source_dir
+
+    cd source_dir do
       # Disable depot_tools auto-update.
       ENV["DEPOT_TOOLS_UPDATE"] = "0"
       # Run the bootstrap script to set up additional required files.
       system "python3", "scripts/bootstrap.py"
-      # Synchronize dependencies (without triggering submodule fetching).
+      # Synchronize dependencies (with the -D flag to remove directories not in DEPS).
       system "gclient", "sync", "-D"
-      # Generate build files for a release build.
+      # Generate build files for a release build (is_debug=false).
       system "gn", "gen", "--args=is_debug=false", "../build/angle"
     end
 
     # Build ANGLE using ninja.
     system "ninja", "-C", "build/angle"
 
-    # Install only the required built libraries and headers.
+    # Install only the desired built libraries.
     lib.install "#{buildpath}/build/angle/libabsl.dylib"
     lib.install "#{buildpath}/build/angle/libEGL.dylib"
     lib.install "#{buildpath}/build/angle/libGLESv2.dylib"
     lib.install "#{buildpath}/build/angle/libchrome_zlib.dylib"
-    include.install Dir["angle-fffbc739779a2df56a464fd6853bbfb24bebb5f6/include/*"]
+    # Install headers from the source directory.
+    include.install Dir["#{source_dir}/include/*"]
   end
 
   test do
