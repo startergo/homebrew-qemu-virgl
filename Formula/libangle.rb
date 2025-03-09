@@ -46,23 +46,23 @@ class Libangle < Formula
     # Diagnostic step: Check if the ANGLE repository has been cloned and its contents
     angle_repo_path = "src"  # Assuming gclient sync clones ANGLE into the 'src' directory
     system "ls", "-l", angle_repo_path
-    system "ls", "-lR", "#{angle_repo_path}/angle"
+    system "ls", "-lR", "#{angle_repo_path}"
 
     # Create a build directory and generate build files with GN
     mkdir "build" do
       if Hardware::CPU.arm?
-        system "gn", "gen", "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", "../angle_build"
+        system "gn", "gen", "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", "../src/angle_build"
       else
-        system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "../angle_build"
+        system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "../src/angle_build"
       end
       # Build ANGLE using Ninja
-      system "ninja", "-C", "../angle_build"
+      system "ninja", "-C", "../src/angle_build"
       
       # Install the built libraries and headers
-      lib.install "../angle_build/libabsl.dylib"
-      lib.install "../angle_build/libEGL.dylib"
-      lib.install "../angle_build/libGLESv2.dylib"
-      lib.install "../angle_build/libchrome_zlib.dylib"
+      lib.install "../src/angle_build/libabsl.dylib"
+      lib.install "../src/angle_build/libEGL.dylib"
+      lib.install "../src/angle_build/libGLESv2.dylib"
+      lib.install "../src/angle_build/libchrome_zlib.dylib"
       include.install Pathname.glob("include/*")
     end
   end
