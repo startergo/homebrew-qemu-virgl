@@ -35,24 +35,22 @@ class Libangle < Formula
     # Ensure the correct PATH is used
     ENV.prepend_path "PATH", "/Users/macbookpro/depot_tools"
 
+    # Run gclient sync -D
+    ohai "Running gclient sync -D"
+    system "gclient", "sync", "-D"
+
     # Create the output directory for gn
     build_dir = File.join(Dir.pwd, "out/Default")
     mkdir_p build_dir
 
     # Generate the build files
-    gn_args = "--args=is_debug=false target_cpu=\"arm64\""
+    gn_args = 'is_debug=false target_cpu="arm64"'
     ohai "Running gn gen with arguments: #{gn_args}"
-
-    # Specify the absolute output directory for gn
-    gn_output = `gn gen #{build_dir} #{gn_args} 2>&1`
-    puts gn_output
-    raise "gn gen failed!" unless $?.success?
+    system "gn", "gen", build_dir, "--args=#{gn_args}"
 
     # Build the project
     ohai "Running ninja build"
-    ninja_output = `ninja -C #{build_dir} 2>&1`
-    puts ninja_output
-    raise "ninja build failed!" unless $?.success?
+    system "ninja", "-C", build_dir
 
     # Install the libraries
     lib.install Dir["#{build_dir}/lib*.dylib"]
