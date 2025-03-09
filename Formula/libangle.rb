@@ -9,11 +9,6 @@ class Libangle < Formula
   depends_on "ninja" => :build
   depends_on "python@3.11" => :build
 
-  resource "bootstrap_script" do
-    url "https://example.com/bootstrap.sh"
-    sha256 "placeholder_for_actual_sha256"
-  end
-
   def install
     # Get the path of the cached tarball
     tarball_path = cached_download
