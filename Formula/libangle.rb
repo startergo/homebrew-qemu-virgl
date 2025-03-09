@@ -1,32 +1,61 @@
 class Libangle < Formula
-  desc "A conformant OpenGL ES implementation for Windows, Mac, Linux, iOS, and Android."
-  homepage "https://chromium.googlesource.com/angle/angle"
-  url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20250309.1/angle-20250309.1.tar.gz"
-  sha256 "748d93eeabbc36f740e84338393deea0167c49da70e069708c54f5767003d12f"
+  desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS and Android"
+  homepage "https://github.com/google/angle"
+  url "https://github.com/google/angle.git", using: :git, revision: "df0f7133799ca6aa0d31802b22d919c6197051cf"
+  version "20250309.1"
   license "BSD-3-Clause"
 
   bottle do
-    root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20250309.1"
+    root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/libangle-20250309.1"
     sha256 cellar: :any, arm64_sequoia: "748d93eeabbc36f740e84338393deea0167c49da70e069708c54f5767003d12f"
     sha256 cellar: :any, monterey: "748d93eeabbc36f740e84338393deea0167c49da70e069708c54f5767003d12f"
   end
 
-  depends_on "cmake" => :build
+  depends_on "meson" => :build
+  depends_on "ninja" => :build
+  depends_on "python@3.9" => :build
+
+  resource "depot_tools" do
+    url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", revision: "dc86a4b9044f9243886ca0da0c1753820ac51f45"
+  end
 
   def install
-    system "cmake", ".", *std_cmake_args, "-DANGLE_ENABLE_VULKAN=OFF"
-    system "make", "install"
+    mkdir "build" do
+      resource("depot_tools").stage do
+        path = PATH.new(ENV["PATH"], Dir.pwd)
+        with_env(PATH: path) do
+          Dir.chdir(buildpath)
+
+          system "python3", "scripts/bootstrap.py"
+          system "gclient", "sync"
+          if Hardware::CPU.arm?
+            system "gn", "gen", \
+              "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", \
+              "./angle_build"
+          else
+            system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "./angle_build"
+          end
+          system "ninja", "-C", "angle_build"
+          lib.install "angle_build/libabsl.dylib"
+          lib.install "angle_build/libEGL.dylib"
+          lib.install "angle_build/libGLESv2.dylib"
+          lib.install "angle_build/libchrome_zlib.dylib"
+          include.install Pathname.glob("include/*")
+        end
+      end
+    end
   end
 
   test do
-    (testpath/"test.cpp").write <<~EOS
-      #include <EGL/egl.h>
-      int main() {
-        EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-        return display == EGL_NO_DISPLAY;
-      }
-    EOS
-    system ENV.cxx, "test.cpp", "-L#{lib}", "-lEGL", "-o", "test"
-    system "./test"
+    # `test do` will create, run in and delete a temporary directory.
+    #
+    # This test will fail and we won't accept that! For Homebrew/homebrew-core
+    # this will need to be a test that verifies the functionality of the
+    # software. Run the test with `brew test libangle`. Options passed
+    # to `brew install` such as `--HEAD` also need to be provided to `brew test`.
+    #
+    # The installed folder is not in the path, so use the entire path to any
+    # executables being tested: `system "#{bin}/program", "do", "something"`.
+    system "true"
   end
 end
