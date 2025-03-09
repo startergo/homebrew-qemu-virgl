@@ -1,9 +1,9 @@
 class Libangle < Formula
   desc "ANGLE - Almost Native Graphics Layer Engine"
   homepage "https://angleproject.org/"
-  # Use the tarball archive from googlesource.com (main branch)
   url "https://chromium.googlesource.com/angle/angle/+archive/refs/heads/main.tar.gz"
   sha256 "bf2977405d80b6ebf75cb71908ac883c7b4da6307806c3800795a9a0eaa88940"
+  version "main"  # Explicitly set the version attribute
   license "BSD-3-Clause"
 
   depends_on "cmake" => :build
@@ -39,7 +39,7 @@ class Libangle < Formula
 
   test do
     # A simple test to verify that the library was installed.
-    # This can be updated based on the actual installation output.
+    # This can be updated based on the actual binary or libraries installed.
     system "#{bin}/angle_info", "--version"
   end
 end
