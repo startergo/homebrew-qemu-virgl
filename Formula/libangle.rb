@@ -11,8 +11,11 @@ class Libangle < Formula
   depends_on "python@3.11" => :build
 
   def install
+    # Get the path of the cached tarball
+    tarball_path = cached_download
+
     # Extract the tarball
-    system "tar", "xvf", "main.tar.gz"
+    system "tar", "xvf", tarball_path
 
     # Create the build directory
     mkdir "build" do
