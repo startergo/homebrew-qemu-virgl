@@ -21,31 +21,44 @@ class Libangle < Formula
   end
 
   def install
+    # Stage and check out the depot_tools resource
     resource("depot_tools").stage do
-      ENV.prepend_path "PATH", "#{ENV["HOME"]}/.pyenv/shims"
+      # Add the current directory (containing depot_tools) to the PATH
       ENV.prepend_path "PATH", Dir.pwd
+      ENV.prepend_path "PATH", "#{ENV["HOME"]}/.pyenv/shims"
 
-      # Set PYENV_VERSION to ensure the correct Python version is used
-      ENV["PYENV_VERSION"] = "2.7.18"
+      # Full path to python2.7 from pyenv
+      python2_7_path = "#{ENV["HOME"]}/.pyenv/versions/2.7.18/bin/python2.7"
 
       # Diagnostic step: Check if python2.7 exists
-      system "which", "python2.7"
-      
-      # Diagnostic step: Check if bootstrap.py exists
+      system "ls", "-l", python2_7_path
+
+      # Diagnostic step: Check if bootstrap.py exists in the depot_tools directory
       system "ls", "-l", "scripts/bootstrap.py"
-      
+
       # Run the bootstrap script using python2.7
-      system "python2.7", "scripts/bootstrap.py"
+      system python2_7_path, "scripts/bootstrap.py"
+      
+      # Sync the ANGLE repository using gclient
       system "gclient", "sync"
     end
 
+    # Diagnostic step: Check if the ANGLE repository has been cloned and its contents
+    angle_repo_path = "src"  # Assuming gclient sync clones ANGLE into the 'src' directory
+    system "ls", "-l", angle_repo_path
+    system "ls", "-lR", "#{angle_repo_path}/angle"
+
+    # Create a build directory and generate build files with GN
     mkdir "build" do
       if Hardware::CPU.arm?
         system "gn", "gen", "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", "../angle_build"
       else
         system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "../angle_build"
       end
+      # Build ANGLE using Ninja
       system "ninja", "-C", "../angle_build"
+      
+      # Install the built libraries and headers
       lib.install "../angle_build/libabsl.dylib"
       lib.install "../angle_build/libEGL.dylib"
       lib.install "../angle_build/libGLESv2.dylib"
@@ -55,6 +68,7 @@ class Libangle < Formula
   end
 
   test do
+    # A simple test to ensure the formula installed correctly
     system "true"
   end
 end
