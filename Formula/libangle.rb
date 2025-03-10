@@ -43,28 +43,7 @@ class Libangle < Formula
       # Bootstrap and sync
       system "python3", "scripts/bootstrap.py"
 
-      # Run ensure_bootstrap script
-      system "bash", "#{depot_tools_path}/ensure_bootstrap"
-
-      # Debugging: Check for ensure files and print their contents
-      ensure_files = Dir.glob("#{buildpath}/angle/*.ensure")
-      if ensure_files.any?
-        ensure_files.each do |file|
-          puts "Contents of the #{file}:"
-          contents = File.read(file)
-          puts contents
-
-          # Attempt to correct or remove the problematic setting
-          fixed_contents = contents.lines.reject { |line| line.include?("$OverrideInstallMode") }.join
-          File.write(file, fixed_contents)
-          puts "Fixed #{file} contents:"
-          puts fixed_contents
-        end
-      else
-        puts "No .ensure files found."
-      end
-
-      # Run gclient sync
+      # Run gclient sync directly, skipping cipd ensure step
       system "gclient", "sync"
 
       # Generate build files with GN
