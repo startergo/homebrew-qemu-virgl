@@ -30,13 +30,13 @@ class Libangle < Formula
     # Use Python 3.13
     ENV.prepend_path "PATH", Formula["python@3.13"].opt_bin
 
-    # Check if vpython exists in the expected directory
-    vpython_path = "#{cached_depot_tools_path}/vpython"
+    # Check if vpython3 exists in the expected directory
+    vpython_path = "#{cached_depot_tools_path}/vpython3"
     unless File.exist?(vpython_path)
-      odie "vpython not found in #{vpython_path}"
+      odie "vpython3 not found in #{vpython_path}"
     end
 
-    # Ensure cipd and vpython are executable
+    # Ensure cipd and vpython3 are executable
     system "chmod", "+x", vpython_path
     system "chmod", "+x", "#{cached_depot_tools_path}/cipd"
 
