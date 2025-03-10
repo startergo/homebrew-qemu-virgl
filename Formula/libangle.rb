@@ -25,7 +25,7 @@ class Libangle < Formula
     end
 
     # Run bootstrap script and sync the repository
-    system "gclient", "config", "--name", ".", url
+    system "gclient", "config", "--name", ".", "https://chromium.googlesource.com/angle/angle.git"
     system "gclient", "sync"
 
     # Generate build files with GN
