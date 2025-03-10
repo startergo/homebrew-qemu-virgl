@@ -102,7 +102,8 @@ class Libangle < Formula
     system "ulimit", "-n", "4096"
 
     # Generate build files with GN
-    system "gn", "gen", "out/Release", "--args=is_debug=false"
+    # Use 'ulimit' command in a subshell to ensure it applies to gn command
+    system "bash", "-c", "ulimit -n 4096; gn gen out/Release --args=is_debug=false"
 
     # Build ANGLE using autoninja
     system "autoninja", "-j", "2", "-C", "out/Release"
