@@ -1,11 +1,10 @@
 class Libangle < Formula
   desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS, and Android"
   homepage "https://chromium.googlesource.com/angle/angle"
-  url "https://chromium.googlesource.com/angle/angle.git", revision: "df0f7133799ca6aa0d31802b22d919c6197051cf"
+  url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20250309.1/angle-20250309.1.tar.gz"
   version "20250309.1"
+  sha256 "PUT_THE_SHA256_HASH_HERE"
   license "BSD-3-Clause"
-
-  CIPD_VERSION = "latest"
 
   bottle do
     root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/libangle-20250309.1"
@@ -100,39 +99,21 @@ class Libangle < Formula
     system "#{venv_path}/bin/python", "--version"
     system "#{venv_path}/bin/python", "-m", "site"
 
-    # Remove existing repository directory if it exists
-    if (buildpath/"angle").exist?
-      rm_rf buildpath/"angle"
-    end
+    # Increase file descriptor limit
+    system "ulimit", "-n", "4096"
 
-    # Clone the ANGLE repository
-    system "git", "clone", "https://chromium.googlesource.com/angle/angle.git", buildpath/"angle"
-    cd buildpath/"angle" do
-      # Checkout the specific revision
-      system "git", "checkout", "df0f7133799ca6aa0d31802b22d919c6197051cf"
+    # Generate build files with GN
+    system "gn", "gen", "out/Release", "--args=is_debug=false"
 
-      # Bootstrap
-      system "python", "scripts/bootstrap.py"
+    # Build ANGLE using autoninja
+    system "autoninja", "-j", "2", "-C", "out/Release"
 
-      # Ensure cipd setup
-      system "bash", "#{cached_depot_tools_path}/cipd_bin_setup.sh"
-
-      # Increase file descriptor limit
-      system "ulimit", "-n", "4096"
-
-      # Generate build files with GN
-      system "gn", "gen", "out/Release", "--args=is_debug=false"
-
-      # Build ANGLE using autoninja
-      system "autoninja", "-j", "2", "-C", "out/Release"
-
-      # Install the build libraries and headers
-      lib.install "out/Release/libabsl.dylib"
-      lib.install "out/Release/libEGL.dylib"
-      lib.install "out/Release/libGLESv2.dylib"
-      lib.install "out/Release/libchrome_zlib.dylib"
-      include.install Dir["include/*"]
-    end
+    # Install the build libraries and headers
+    lib.install "out/Release/libabsl.dylib"
+    lib.install "out/Release/libEGL.dylib"
+    lib.install "out/Release/libGLESv2.dylib"
+    lib.install "out/Release/libchrome_zlib.dylib"
+    include.install Dir["include/*"]
   end
 
   test do
