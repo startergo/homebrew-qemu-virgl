@@ -23,27 +23,34 @@ class Libangle < Formula
     resource("depot_tools").stage(depot_tools_path)
     ENV.prepend_path "PATH", depot_tools_path
 
-    # Ensure a clean state by resetting any local changes and cleaning up untracked files
-    system "git", "fetch", "--all"
-    system "git", "reset", "--hard", "origin/main"
-    system "git", "clean", "-fdx"
+    # Remove existing repository directory if it exists
+    if (buildpath/"angle").exist?
+      rm_rf buildpath/"angle"
+    end
 
-    # Bootstrap and sync
-    system "python3", "scripts/bootstrap.py"
-    system "gclient", "sync"
+    # Clone the ANGLE repository
+    system "git", "clone", "https://chromium.googlesource.com/angle/angle.git", buildpath/"angle"
+    cd buildpath/"angle" do
+      # Checkout the specific revision
+      system "git", "checkout", "df0f7133799ca6aa0d31802b22d919c6197051cf"
 
-    # Generate build files with GN
-    system "gn", "gen", "out/Release", "--args=is_debug=false"
+      # Bootstrap and sync
+      system "python3", "scripts/bootstrap.py"
+      system "gclient", "sync"
 
-    # Build ANGLE using autoninja
-    system "autoninja", "-C", "out/Release"
+      # Generate build files with GN
+      system "gn", "gen", "out/Release", "--args=is_debug=false"
 
-    # Install the built libraries and headers
-    lib.install "out/Release/libabsl.dylib"
-    lib.install "out/Release/libEGL.dylib"
-    lib.install "out/Release/libGLESv2.dylib"
-    lib.install "out/Release/libchrome_zlib.dylib"
-    include.install Dir["include/*"]
+      # Build ANGLE using autoninja
+      system "autoninja", "-C", "out/Release"
+
+      # Install the built libraries and headers
+      lib.install "out/Release/libabsl.dylib"
+      lib.install "out/Release/libEGL.dylib"
+      lib.install "out/Release/libGLESv2.dylib"
+      lib.install "out/Release/libchrome_zlib.dylib"
+      include.install Dir["include/*"]
+    end
   end
 
   test do
