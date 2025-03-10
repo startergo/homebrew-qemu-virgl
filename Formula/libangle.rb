@@ -104,20 +104,39 @@ class Libangle < Formula
     # Increase file descriptor limit
     system "ulimit", "-n", "4096"
 
-    # Set up and run gn within the context of a Chromium checkout
-    checkout_path = buildpath/"angle"
-    system "git", "clone", "--recurse-submodules", "https://chromium.googlesource.com/angle/angle.git", checkout_path
-    cd checkout_path do
-      system "gn", "gen", "out/Release", "--args=is_debug=false"
-      system "autoninja", "-j", "2", "-C", "out/Release"
+    # Remove existing repository directory if it exists
+    if (buildpath/"angle").exist?
+      rm_rf buildpath/"angle"
     end
 
-    # Install the build libraries and headers
-    lib.install "out/Release/libabsl.dylib"
-    lib.install "out/Release/libEGL.dylib"
-    lib.install "out/Release/libGLESv2.dylib"
-    lib.install "out/Release/libchrome_zlib.dylib"
-    include.install Dir["include/*"]
+    # Clone the ANGLE repository
+    system "git", "clone", "https://chromium.googlesource.com/angle/angle.git", buildpath/"angle"
+    cd buildpath/"angle" do
+      # Checkout the specific revision
+      system "git", "checkout", "df0f7133799ca6aa0d31802b22d919c6197051cf"
+
+      # Bootstrap
+      system "python", "scripts/bootstrap.py"
+
+      # Ensure cipd setup
+      system "bash", "#{cached_depot_tools_path}/cipd_bin_setup.sh"
+
+      # Increase file descriptor limit
+      system "ulimit", "-n", "4096"
+
+      # Generate build files with GN
+      system "gn", "gen", "out/Release", "--args=is_debug=false"
+
+      # Build ANGLE using autoninja
+      system "autoninja", "-j", "2", "-C", "out/Release"
+
+      # Install the build libraries and headers
+      lib.install "out/Release/libabsl.dylib"
+      lib.install "out/Release/libEGL.dylib"
+      lib.install "out/Release/libGLESv2.dylib"
+      lib.install "out/Release/libchrome_zlib.dylib"
+      include.install Dir["include/*"]
+    end
   end
 
   test do
