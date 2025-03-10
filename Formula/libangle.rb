@@ -99,9 +99,8 @@ class Libangle < Formula
       # Ensure cipd setup
       system "bash", "#{cached_depot_tools_path}/cipd_bin_setup.sh"
 
-      # Increase system resource limits
+      # Increase file descriptor limit
       system "ulimit", "-n", "4096"
-      system "ulimit", "-u", "unlimited"
 
       # Generate build files with GN
       system "gn", "gen", "out/Release", "--args=is_debug=false"
