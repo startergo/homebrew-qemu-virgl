@@ -20,23 +20,27 @@ class Libangle < Formula
   end
 
   def install
-    # Clone the depot_tools repository and add it to the PATH
-    depot_tools_path = buildpath/"angle/third_party/depot_tools"
-    resource("depot_tools").stage(depot_tools_path)
-    ENV.prepend_path "PATH", depot_tools_path
+    # Clone the depot_tools repository and locate it using a wildcard search
+    resource("depot_tools").stage(buildpath/"depot_tools_tmp")
+    depot_tools_path = Dir.glob(buildpath/"depot_tools_tmp*/depot_tools").first
+    if depot_tools_path.nil?
+      odie "depot_tools directory not found"
+    end
+    mv depot_tools_path, buildpath/"angle/third_party/depot_tools"
+    ENV.prepend_path "PATH", buildpath/"angle/third_party/depot_tools"
 
     # Use Python 3.13
     ENV.prepend_path "PATH", Formula["python@3.13"].opt_bin
 
     # Check if vpython exists in the expected directory
-    vpython_path = "#{depot_tools_path}/vpython"
+    vpython_path = buildpath/"angle/third_party/depot_tools/vpython"
     unless File.exist?(vpython_path)
       odie "vpython not found in #{vpython_path}"
     end
 
     # Ensure cipd and vpython are executable
     system "chmod", "+x", vpython_path
-    system "chmod", "+x", "#{depot_tools_path}/cipd"
+    system "chmod", "+x", buildpath/"angle/third_party/depot_tools/cipd"
 
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
@@ -53,7 +57,7 @@ class Libangle < Formula
       system "python3", "scripts/bootstrap.py"
 
       # Ensure cipd setup
-      system "bash", "#{depot_tools_path}/cipd_bin_setup.sh"
+      system "bash", buildpath/"angle/third_party/depot_tools/cipd_bin_setup.sh"
 
       # Create a custom .ensure file
       custom_ensure_file = buildpath/"custom.ensure"
