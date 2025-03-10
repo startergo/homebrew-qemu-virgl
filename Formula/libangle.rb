@@ -37,7 +37,7 @@ class Libangle < Formula
       File.delete(gn_path)
     end
     unless File.exist?(gn_path)
-      system "curl -o #{gn_path} -L https://storage.googleapis.com/chromium-gn/gn/mac-amd64/gn"
+      system "curl -o #{gn_path} -L https://chrome-infra-packages.appspot.com/dl/gn/gn/mac-amd64/+/latest"
     end
 
     # Detect and use the bundled Python version dynamically
