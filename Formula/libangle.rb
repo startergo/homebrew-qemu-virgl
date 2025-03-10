@@ -56,6 +56,10 @@ class Libangle < Formula
     system "echo 'Checking installed packages in depot_tools Python environment:'"
     system depot_tools_pip3, "list"
 
+    # Explicitly check if httplib2 is installed
+    system "echo 'Checking if httplib2 is installed:'"
+    system "#{python_bundled_path}/python3", "-c", "import httplib2; print('httplib2 is installed')"
+
     # Debugging: Check Python version and path
     system "echo 'Python version and path:'"
     system "#{python_bundled_path}/python3", "--version"
