@@ -6,11 +6,6 @@ class Libangle < Formula
   sha256 "39b00a7e145df3678aa4d498293e2d4800f6d887bac04b081c024c50af4b24cb"
   license "BSD-3-Clause"
 
-  bottle do
-    root_url "https://objects.githubusercontent.com/github-production-release-asset-2e65be/945197099/dde72063-450c-4bc1-ab15-ce3474934dfd?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=releaseassetproduction%2F20250310%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250310T203102Z&X-Amz-Expires=300&X-Amz-Signature=7538b35046fe66af55f52fd50a0b2fe738434d199cc2e8bcf08217e61a62105d&X-Amz-SignedHeaders=host&response-content-disposition=attachment%3B%20filename%3Dangle-20250309.1.tar.gz&response-content-type=application%2Foctet-stream"
-    sha256 cellar: :any, arm64_big_sur: "748d93eeabbc36f740e8438393deea0167c49da70e069708c54f5767003d12f"
-  end
-
   depends_on "ninja" => :build
   depends_on "python@3.9" => :build
   depends_on "go" => :build
