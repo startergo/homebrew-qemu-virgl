@@ -24,31 +24,26 @@ class Libangle < Formula
       ENV.prepend_path "PATH", depot_tools_path
     end
 
-    # Navigate to the downloaded angle source directory
-    cd "angle" do
-      # Run bootstrap script
-      system "python3", "scripts/bootstrap.py"
+    # Run bootstrap script and sync the repository
+    system "python3", "scripts/bootstrap.py"
+    system "gclient", "sync"
 
-      # Sync the repository
-      system "gclient", "sync"
+    # Generate build files with GN
+    system "gn", "gen", "--args=is_debug=false out/Release 2>&1 | tee gn_gen_output.txt"
 
-      # Generate build files with GN
-      system "gn", "gen", "--args=is_debug=false out/Release 2>&1 | tee gn_gen_output.txt"
+    # Diagnostic step: Check the contents of the build directory and the output log before building
+    system "ls", "-l", "out/Release"
+    system "cat", "gn_gen_output.txt"
 
-      # Diagnostic step: Check the contents of the build directory and the output log before building
-      system "ls", "-l", "out/Release"
-      system "cat", "gn_gen_output.txt"
-
-      # Build ANGLE using autoninja
-      system "autoninja", "-C", "out/Release"
+    # Build ANGLE using autoninja
+    system "autoninja", "-C", "out/Release"
       
-      # Install the built libraries and headers
-      lib.install "out/Release/libabsl.dylib"
-      lib.install "out/Release/libEGL.dylib"
-      lib.install "out/Release/libGLESv2.dylib"
-      lib.install "out/Release/libchrome_zlib.dylib"
-      include.install Dir["include/*"]
-    end
+    # Install the built libraries and headers
+    lib.install "out/Release/libabsl.dylib"
+    lib.install "out/Release/libEGL.dylib"
+    lib.install "out/Release/libGLESv2.dylib"
+    lib.install "out/Release/libchrome_zlib.dylib"
+    include.install Dir["include/*"]
   end
 
   test do
