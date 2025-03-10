@@ -51,6 +51,11 @@ class Libangle < Formula
     system "echo 'Checking installed packages in depot_tools Python environment:'"
     system depot_tools_pip3, "list"
 
+    # Debugging: Check Python version and path
+    system "echo 'Python version and path:'"
+    system "#{python_bundled_path}/python3", "--version"
+    system "#{python_bundled_path}/python3", "-m", "site"
+
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
       rm_rf buildpath/"angle"
