@@ -15,10 +15,6 @@ class Libangle < Formula
 
   depends_on "python@3.13" => :build
 
-  resource "depot_tools" do
-    url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", branch: "main"
-  end
-
   def install
     # Path to the cached depot_tools directory
     cached_depot_tools_path = HOMEBREW_CACHE/"libangle--depot_tools--git"
