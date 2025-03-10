@@ -24,9 +24,9 @@ class Libangle < Formula
       odie "Cached depot_tools directory not found: #{cached_depot_tools_path}"
     end
 
-    # Move the cached depot_tools directory to the buildpath
+    # Copy the cached depot_tools directory to the buildpath
     depot_tools_path = buildpath/"angle/third_party/depot_tools"
-    mv cached_depot_tools_path, depot_tools_path
+    cp_r "#{cached_depot_tools_path}/.", depot_tools_path
     ENV.prepend_path "PATH", depot_tools_path
 
     # Use Python 3.13
