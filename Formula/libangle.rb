@@ -48,7 +48,7 @@ class Libangle < Formula
     system depot_tools_pip3, "install", "httplib2"
 
     # Debugging: Verify installation of httplib2
-    system "echo 'Checking installed packages:'"
+    system "echo 'Checking installed packages in depot_tools Python environment:'"
     system depot_tools_pip3, "list"
 
     # Remove existing repository directory if it exists
