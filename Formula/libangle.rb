@@ -86,9 +86,9 @@ class Libangle < Formula
       # Ensure cipd setup
       system "bash", "#{cached_depot_tools_path}/cipd_bin_setup.sh"
 
-      # Run gclient sync with dependencies and log output
-      system "echo 'Running gclient sync -D'"
-      system "gclient", "sync", "-D", "--verbose"
+      # Commented out gclient sync
+      # system "echo 'Running gclient sync -D'"
+      # system "gclient", "sync", "-D", "--verbose"
 
       # Generate build files with GN
       system "gn", "gen", "out/Release", "--args=is_debug=false"
