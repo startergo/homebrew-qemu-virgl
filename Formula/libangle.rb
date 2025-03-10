@@ -43,7 +43,22 @@ class Libangle < Formula
       # Bootstrap and sync
       system "python3", "scripts/bootstrap.py"
 
-      # Run gclient sync directly, skipping cipd ensure step
+      # Search for .ensure files
+      ensure_files = Dir.glob('/private/tmp/*.ensure')
+      if ensure_files.any?
+        ensure_files.each do |file|
+          puts "Found .ensure file: #{file}"
+          contents = File.read(file)
+          fixed_contents = contents.lines.reject { |line| line.include?("$OverrideInstallMode") }.join
+          File.write(file, fixed_contents)
+          puts "Fixed .ensure file contents for #{file}:"
+          puts fixed_contents
+        end
+      else
+        puts "No .ensure files found."
+      end
+
+      # Run gclient sync
       system "gclient", "sync"
 
       # Generate build files with GN
