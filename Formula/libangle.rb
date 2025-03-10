@@ -43,8 +43,13 @@ class Libangle < Formula
     # Set VPYTHON_BYPASS to use system Python directly
     ENV["VPYTHON_BYPASS"] = "manually managed python not supported by chrome operations"
 
+    # Debugging: Print environment variables
+    system "echo 'Environment variables:'"
+    system "env"
+
     # Install necessary Python dependencies using the correct pip3
     depot_tools_pip3 = "#{python_bundled_path}/pip3"
+    system "echo 'Using pip3 located at: #{depot_tools_pip3}'"
     system depot_tools_pip3, "install", "httplib2"
 
     # Debugging: Verify installation of httplib2
