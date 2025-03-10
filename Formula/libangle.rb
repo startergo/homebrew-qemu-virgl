@@ -24,20 +24,25 @@ class Libangle < Formula
       ENV.prepend_path "PATH", depot_tools_path
     end
 
-    # Clone the ANGLE repository and run the build commands
-    mkdir "angle" do
-      system "gclient", "config", "--name", ".", "https://chromium.googlesource.com/angle/angle.git"
-      system "gclient", "sync"
-      system "gn", "gen", "out/Release", "--args=is_debug=false"
-      system "autoninja", "-C", "out/Release"
-    end
+    # Ensure depot_tools is available before running commands
+    ENV.prepend_path "PATH", depot_tools_path
 
+    # Run gclient config and sync
+    system "gclient", "config", "--name", ".", "https://chromium.googlesource.com/angle/angle.git"
+    system "gclient", "sync"
+
+    # Generate build files with GN
+    system "gn", "gen", "out/Release", "--args=is_debug=false"
+
+    # Build ANGLE using autoninja
+    system "autoninja", "-C", "out/Release"
+      
     # Install the built libraries and headers
-    lib.install "angle/out/Release/libabsl.dylib"
-    lib.install "angle/out/Release/libEGL.dylib"
-    lib.install "angle/out/Release/libGLESv2.dylib"
-    lib.install "angle/out/Release/libchrome_zlib.dylib"
-    include.install Dir["angle/include/*"]
+    lib.install "out/Release/libabsl.dylib"
+    lib.install "out/Release/libEGL.dylib"
+    lib.install "out/Release/libGLESv2.dylib"
+    lib.install "out/Release/libchrome_zlib.dylib"
+    include.install Dir["include/*"]
   end
 
   test do
