@@ -25,11 +25,12 @@ class Libangle < Formula
     # Use the cached depot_tools directory directly
     ENV.prepend_path "PATH", cached_depot_tools_path
 
-    # Create a symbolic link for vpython
+    # Create symbolic links for vpython and gn if they don't exist
     ln_sf "#{cached_depot_tools_path}/vpython3", "#{cached_depot_tools_path}/vpython"
-    
-    # Create a symbolic link for gn
-    ln_sf "#{cached_depot_tools_path}/gn", "#{cached_depot_tools_path}/gn"
+    gn_path = "#{cached_depot_tools_path}/gn"
+    unless File.exist?(gn_path)
+      system "curl -o #{gn_path} -L https://storage.googleapis.com/chromium-gn/gn/mac-amd64/gn"
+    end
 
     # Detect and use the bundled Python version dynamically
     python_bundled_path = Dir["#{cached_depot_tools_path}/python*-bin"].first
@@ -42,7 +43,7 @@ class Libangle < Formula
     # Ensure cipd, vpython3, and gn are executable
     system "chmod", "+x", "#{cached_depot_tools_path}/vpython3"
     system "chmod", "+x", "#{cached_depot_tools_path}/cipd"
-    system "chmod", "+x", "#{cached_depot_tools_path}/gn"
+    system "chmod", "+x", gn_path
 
     # Set VPYTHON_BYPASS to use system Python directly
     ENV["VPYTHON_BYPASS"] = "manually managed python not supported by chrome operations"
