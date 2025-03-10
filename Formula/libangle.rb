@@ -24,7 +24,7 @@ class Libangle < Formula
     ENV.prepend_path "PATH", depot_tools_path
 
     # Run gclient config and sync
-    system "gclient", "config", "--name", ".", "https://chromium.googlesource.com/angle/angle.git"
+    system "gclient", "config", "--name", "angle", "https://chromium.googlesource.com/angle/angle.git"
     system "gclient", "sync"
 
     # Generate build files with GN
