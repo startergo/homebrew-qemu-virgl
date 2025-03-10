@@ -14,7 +14,7 @@ class Libangle < Formula
   depends_on "python@3.9" => :build
 
   resource "depot_tools" do
-    url "https://chromium.googlesource.com/chromium/tools/depot_tools.git"
+    url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", branch: "main"
   end
 
   def install
@@ -33,7 +33,11 @@ class Libangle < Formula
       system "gclient", "sync"
 
       # Generate build files with GN
-      system "gn", "gen", "--args=is_debug=false out/Release"
+      system "gn", "gen", "--args=is_debug=false out/Release 2>&1 | tee gn_gen_output.txt"
+
+      # Diagnostic step: Check the contents of the build directory and the output log before building
+      system "ls", "-l", "out/Release"
+      system "cat", "gn_gen_output.txt"
 
       # Build ANGLE using autoninja
       system "autoninja", "-C", "out/Release"
