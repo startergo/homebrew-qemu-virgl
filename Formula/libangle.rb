@@ -46,8 +46,8 @@ class Libangle < Formula
       # Run ensure_bootstrap script
       system "bash", "#{depot_tools_path}/ensure_bootstrap"
 
-      # Debugging: Check for .ensure files and print their contents
-      ensure_files = Dir.glob('/private/tmp/tmp*.ensure')
+      # Debugging: Check for ensure files and print their contents
+      ensure_files = Dir.glob("#{buildpath}/angle/*.ensure")
       if ensure_files.any?
         ensure_files.each do |file|
           puts "Contents of the #{file}:"
