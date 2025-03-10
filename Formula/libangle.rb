@@ -43,9 +43,6 @@ class Libangle < Formula
     # Set VPYTHON_BYPASS to use system Python directly
     ENV["VPYTHON_BYPASS"] = "manually managed python not supported by chrome operations"
 
-    # Install necessary Python dependencies
-    system "pip3", "install", "httplib2"
-
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
       rm_rf buildpath/"angle"
@@ -63,8 +60,8 @@ class Libangle < Formula
       # Ensure cipd setup
       system "bash", "#{cached_depot_tools_path}/cipd_bin_setup.sh"
 
-      # Run gclient sync
-      system "gclient", "sync"
+      # Run gclient sync with dependencies
+      system "gclient", "sync", "-D"
 
       # Generate build files with GN
       system "gn", "gen", "out/Release", "--args=is_debug=false"
