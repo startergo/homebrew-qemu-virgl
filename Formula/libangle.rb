@@ -23,8 +23,9 @@ class Libangle < Formula
     resource("depot_tools").stage(depot_tools_path)
     ENV.prepend_path "PATH", depot_tools_path
 
-    # Ensure a clean state by resetting any local changes
-    system "git", "reset", "--hard"
+    # Ensure a clean state by resetting any local changes and cleaning up untracked files
+    system "git", "fetch", "--all"
+    system "git", "reset", "--hard", "origin/main"
     system "git", "clean", "-fdx"
 
     # Bootstrap and sync
