@@ -26,11 +26,8 @@ class Libangle < Formula
     # Use Python 3.13
     ENV.prepend_path "PATH", Formula["python@3.13"].opt_bin
 
-    # Create a virtual environment and install vpython
-    venv_path = buildpath/"venv"
-    system "python3", "-m", "venv", venv_path
-    system venv_path/"bin/pip", "install", "vpython"
-    ENV.prepend_path "PATH", venv_path/"bin"
+    # Ensure vpython and vpython3 from depot_tools are in the PATH
+    ENV.prepend_path "PATH", buildpath/"angle/third_party/depot_tools"
 
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
