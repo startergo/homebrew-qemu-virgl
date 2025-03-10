@@ -14,20 +14,23 @@ class Libangle < Formula
   end
 
   depends_on "python@3.13" => :build
-  
+
   resource "depot_tools" do
     url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", branch: "main"
   end
 
   def install
-    # Clone the depot_tools repository
-    resource("depot_tools").stage(buildpath/"depot_tools_tmp")
-    depot_tools_dir = Dir.glob(buildpath/"depot_tools_tmp*/depot_tools").first
-    if depot_tools_dir.nil?
-      odie "depot_tools directory not found"
+    # Path to the cached depot_tools directory
+    cached_depot_tools_path = HOMEBREW_CACHE/"libangle--depot_tools--git"
+
+    # Check if the cached depot_tools directory exists
+    if !cached_depot_tools_path.directory?
+      odie "Cached depot_tools directory not found: #{cached_depot_tools_path}"
     end
-    mv depot_tools_dir, buildpath/"angle/third_party/depot_tools"
+
+    # Move the cached depot_tools directory to the buildpath
     depot_tools_path = buildpath/"angle/third_party/depot_tools"
+    mv cached_depot_tools_path, depot_tools_path
     ENV.prepend_path "PATH", depot_tools_path
 
     # Use Python 3.13
