@@ -43,31 +43,23 @@ class Libangle < Formula
       # Bootstrap and sync
       system "python3", "scripts/bootstrap.py"
 
-      # Log directory contents before gclient sync
-      puts "Contents of /private/tmp before gclient sync:"
-      puts Dir.glob('/private/tmp/*').join("\n")
+      # Create a custom .ensure file
+      custom_ensure_file = buildpath/"custom.ensure"
+      File.open(custom_ensure_file, "w") do |file|
+        file.write <<~EOS
+          # Ensure the CIPD client is up-to-date.
+          $ParanoidMode CheckPresence
+
+          # Ensure the latest CIPD client is installed.
+          infra/tools/cipd/#{CIPD_VERSION}
+        EOS
+      end
+
+      # Use the custom .ensure file during gclient sync
+      ENV["GCLIENT_CIPD_ENSURE_FILE"] = custom_ensure_file
 
       # Run gclient sync
       system "gclient", "sync"
-
-      # Log directory contents after gclient sync
-      puts "Contents of /private/tmp after gclient sync:"
-      puts Dir.glob('/private/tmp/*').join("\n")
-
-      # Search for .ensure files after gclient sync
-      ensure_files = Dir.glob('/private/tmp/*').select { |f| f.include?('.ensure') }
-      if ensure_files.any?
-        ensure_files.each do |file|
-          puts "Found .ensure file: #{file}"
-          contents = File.read(file)
-          fixed_contents = contents.lines.reject { |line| line.include?("$OverrideInstallMode") }.join
-          File.write(file, fixed_contents)
-          puts "Fixed .ensure file contents for #{file}:"
-          puts fixed_contents
-        end
-      else
-        puts "No .ensure files found."
-      end
 
       # Generate build files with GN
       system "gn", "gen", "out/Release", "--args=is_debug=false"
