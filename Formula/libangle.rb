@@ -26,9 +26,9 @@ class Libangle < Formula
     ENV.prepend_path "PATH", cached_depot_tools_path
 
     # Create symbolic links for vpython and gn if they don't exist
-    ln_sf "#{cached_depot_tools_path}/vpython3", "#{cached_depot_tools_path}/vpython"
+    ln_sf "#{cached_depot_tools_path}/vpython3", "#{cached_depot_tools_path}/vpython" unless File.symlink?("#{cached_depot_tools_path}/vpython")
     gn_path = "#{cached_depot_tools_path}/gn"
-    unless File.exist?(gn_path)
+    unless File.exist?(gn_path) && !File.symlink?(gn_path)
       system "curl -o #{gn_path} -L https://storage.googleapis.com/chromium-gn/gn/mac-amd64/gn"
     end
 
