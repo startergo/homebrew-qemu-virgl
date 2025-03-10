@@ -52,8 +52,9 @@ class Libangle < Formula
     # If gn binary is not executable, build gn from source
     if !File.executable?(gn_path)
       gn_build_path = buildpath/"gn"
-      system "git", "clone", "--depth=1", "https://gn.googlesource.com/gn", gn_build_path
+      system "git", "clone", "https://gn.googlesource.com/gn", gn_build_path
       cd gn_build_path do
+        system "git", "fetch", "--unshallow"
         system "python", "build/gen.py"
         system "ninja", "-C", "out"
         bin.install "out/gn"
