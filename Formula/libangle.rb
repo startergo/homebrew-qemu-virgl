@@ -23,7 +23,10 @@ class Libangle < Formula
     resource("depot_tools").stage(depot_tools_path)
     ENV.prepend_path "PATH", depot_tools_path
 
-    # Use the existing ANGLE repository
+    # Diagnostic step: List the contents of the current directory
+    system "ls", "-l"
+
+    # Check if the angle directory exists
     angle_path = buildpath/"angle"
     if angle_path.exist?
       cd angle_path do
