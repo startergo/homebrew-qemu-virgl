@@ -51,12 +51,13 @@ class Libangle < Formula
     # Create a build directory and generate build files with GN
     mkdir "build" do
       if Hardware::CPU.arm?
-        system "gn", "gen", "--args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false", "../src/angle_build"
+        system "gn gen --args=use_custom_libcxx=false target_cpu=\"arm64\" treat_warnings_as_errors=false ../src/angle_build 2>&1 | tee gn_gen_output.txt"
       else
-        system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "../src/angle_build"
+        system "gn gen --args=use_custom_libcxx=false treat_warnings_as_errors=false ../src/angle_build 2>&1 | tee gn_gen_output.txt"
       end
-      # Diagnostic step: Check the contents of the build directory before building
+      # Diagnostic step: Check the contents of the build directory and the output log before building
       system "ls", "-l", "../src/angle_build"
+      system "cat", "gn_gen_output.txt"
       
       # Build ANGLE using Ninja
       system "ninja", "-C", "../src/angle_build"
