@@ -25,7 +25,10 @@ class Libangle < Formula
 
     # Run gclient config and sync
     system "gclient", "config", "--name", "angle", "https://chromium.googlesource.com/angle/angle.git"
-    system "gclient", "sync"
+    system "gclient", "sync", "--no-history"
+
+    # Diagnostic step: Check the contents of the angle directory after sync
+    system "ls", "-l", "."
 
     # Generate build files with GN
     system "gn", "gen", "out/Release", "--args=is_debug=false"
