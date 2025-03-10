@@ -27,17 +27,14 @@ class Libangle < Formula
     # Use the cached depot_tools directory directly
     ENV.prepend_path "PATH", cached_depot_tools_path
 
+    # Create a symbolic link for vpython
+    ln_sf "#{cached_depot_tools_path}/vpython3", "#{cached_depot_tools_path}/vpython"
+
     # Use Python 3.13
     ENV.prepend_path "PATH", Formula["python@3.13"].opt_bin
 
-    # Check if vpython3 exists in the expected directory
-    vpython_path = "#{cached_depot_tools_path}/vpython3"
-    unless File.exist?(vpython_path)
-      odie "vpython3 not found in #{vpython_path}"
-    end
-
     # Ensure cipd and vpython3 are executable
-    system "chmod", "+x", vpython_path
+    system "chmod", "+x", "#{cached_depot_tools_path}/vpython3"
     system "chmod", "+x", "#{cached_depot_tools_path}/cipd"
 
     # Remove existing repository directory if it exists
@@ -56,21 +53,6 @@ class Libangle < Formula
 
       # Ensure cipd setup
       system "bash", "#{cached_depot_tools_path}/cipd_bin_setup.sh"
-
-      # Create a custom .ensure file
-      custom_ensure_file = buildpath/"custom.ensure"
-      File.open(custom_ensure_file, "w") do |file|
-        file.write <<~EOS
-          # Ensure the CIPD client is up-to-date.
-          $ParanoidMode CheckPresence
-
-          # Ensure the latest CIPD client is installed.
-          infra/tools/cipd/#{CIPD_VERSION}
-        EOS
-      end
-
-      # Use the custom .ensure file during gclient sync
-      ENV["GCLIENT_CIPD_ENSURE_FILE"] = custom_ensure_file
 
       # Run gclient sync
       system "gclient", "sync"
