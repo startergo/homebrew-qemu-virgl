@@ -25,7 +25,7 @@ class Libangle < Formula
     end
 
     # Run bootstrap script and sync the repository
-    system "python3", "scripts/bootstrap.py"
+    system "gclient", "config", "--name", ".", url
     system "gclient", "sync"
 
     # Generate build files with GN
