@@ -55,6 +55,9 @@ class Libangle < Formula
       else
         system "gn", "gen", "--args=use_custom_libcxx=false treat_warnings_as_errors=false", "../src/angle_build"
       end
+      # Diagnostic step: Check the contents of the build directory before building
+      system "ls", "-l", "../src/angle_build"
+      
       # Build ANGLE using Ninja
       system "ninja", "-C", "../src/angle_build"
       
