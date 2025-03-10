@@ -13,6 +13,10 @@ class Libangle < Formula
     sha256 cellar: :any, monterey: "748d93eeabbc36f740e84338393deea0167c49da70e069708c54f5767003d12f"
   end
 
+  depends_on "ninja" => :build
+  depends_on "python@3.9" => :build
+  depends_on "go" => :build
+
   def install
     # Path to the cached depot_tools directory
     cached_depot_tools_path = HOMEBREW_CACHE/"libangle--depot_tools--git"
@@ -30,14 +34,30 @@ class Libangle < Formula
       odie "Cached depot_tools directory is not writable: #{cached_depot_tools_path}"
     end
 
-    # Create symbolic links for vpython and gn if they don't exist
+    # Create symbolic links for vpython if it doesn't exist
     ln_sf "#{cached_depot_tools_path}/vpython3", "#{cached_depot_tools_path}/vpython" unless File.symlink?("#{cached_depot_tools_path}/vpython")
+
+    # Check system architecture and download appropriate gn binary
     gn_path = "#{cached_depot_tools_path}/gn"
     if File.symlink?(gn_path)
       File.delete(gn_path)
     end
     unless File.exist?(gn_path)
-      system "curl -o #{gn_path} -L https://chrome-infra-packages.appspot.com/dl/gn/gn/mac-amd64/+/latest"
+      arch = `uname -m`.chomp
+      if arch == "x86_64" || arch == "arm64"
+        system "curl -o #{gn_path} -L https://chrome-infra-packages.appspot.com/dl/gn/gn/mac-#{arch}/+/latest"
+      end
+    end
+
+    # If gn binary is not executable, build gn from source
+    if !File.executable?(gn_path)
+      gn_build_path = buildpath/"gn"
+      system "git", "clone", "--depth=1", "https://gn.googlesource.com/gn", gn_build_path
+      cd gn_build_path do
+        system "python", "build/gen.py"
+        system "ninja", "-C", "out"
+        bin.install "out/gn"
+      end
     end
 
     # Detect and use the bundled Python version dynamically
@@ -48,10 +68,9 @@ class Libangle < Formula
 
     ENV.prepend_path "PATH", python_bundled_path
 
-    # Ensure cipd, vpython3, and gn are executable
+    # Ensure cipd and vpython3 are executable
     system "chmod", "+x", "#{cached_depot_tools_path}/vpython3"
     system "chmod", "+x", "#{cached_depot_tools_path}/cipd"
-    system "chmod", "+x", gn_path
 
     # Set VPYTHON_BYPASS to use system Python directly
     ENV["VPYTHON_BYPASS"] = "manually managed python not supported by chrome operations"
