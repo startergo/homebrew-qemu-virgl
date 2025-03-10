@@ -11,7 +11,7 @@ class Libangle < Formula
     sha256 cellar: :any, monterey: "748d93eeabbc36f740e84338393deea0167c49da70e069708c54f5767003d12f"
   end
 
-  depends_on "python@3.9" => :build
+  depends_on "python@3.13" => :build
 
   resource "depot_tools" do
     url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", branch: "main"
@@ -22,6 +22,12 @@ class Libangle < Formula
     depot_tools_path = buildpath/"depot_tools"
     resource("depot_tools").stage(depot_tools_path)
     ENV.prepend_path "PATH", depot_tools_path
+
+    # Use Python 3.13
+    ENV.prepend_path "PATH", Formula["python@3.13"].opt_bin
+
+    # Install vpython
+    system "pip3", "install", "vpython"
 
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
