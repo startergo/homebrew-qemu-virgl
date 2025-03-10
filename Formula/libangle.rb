@@ -59,7 +59,7 @@ class Libangle < Formula
           system "git", "fetch", "--unshallow"
         end
         system "python3", "build/gen.py"
-        system "ninja", "-C", "out"
+        system "ninja", "-j", "4", "-C", "out"  # Limit to 4 parallel jobs
         bin.install "out/gn"
       end
     end
