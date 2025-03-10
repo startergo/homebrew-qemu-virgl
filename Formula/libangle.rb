@@ -25,12 +25,18 @@ class Libangle < Formula
     resource("depot_tools").stage(depot_tools_path)
     ENV.prepend_path "PATH", depot_tools_path
 
-    # Ensure cipd and vpython are executable
-    system "chmod", "+x", "#{depot_tools_path}/cipd"
-    system "chmod", "+x", "#{depot_tools_path}/vpython"
-
     # Use Python 3.13
     ENV.prepend_path "PATH", Formula["python@3.13"].opt_bin
+
+    # Check if vpython exists in the expected directory
+    vpython_path = "#{depot_tools_path}/vpython"
+    unless File.exist?(vpython_path)
+      odie "vpython not found in #{vpython_path}"
+    end
+
+    # Ensure cipd and vpython are executable
+    system "chmod", "+x", vpython_path
+    system "chmod", "+x", "#{depot_tools_path}/cipd"
 
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
