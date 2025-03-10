@@ -47,31 +47,27 @@ class Libangle < Formula
     system "echo 'Environment variables:'"
     system "env"
 
-    # Install necessary Python dependencies using the correct pip3
-    depot_tools_pip3 = "#{python_bundled_path}/pip3"
-    system "echo 'Using pip3 located at: #{depot_tools_pip3}'"
-    
-    # Log the output of the pip3 install command to a file
-    system "#{depot_tools_pip3} install httplib2 > #{buildpath}/pip3_install.log 2>&1"
+    # Create a virtual environment for Python dependencies
+    venv_path = buildpath/"venv"
+    system "python3", "-m", "venv", venv_path
+    ENV.prepend_path "PATH", venv_path/"bin"
 
-    # Check the exit status of the pip3 install command
-    if !$?.success?
-      system "cat #{buildpath}/pip3_install.log"
-      odie "Failed to install httplib2 using pip3"
-    end
+    # Install necessary Python dependencies using pip within the virtual environment
+    system "echo 'Using pip located at: #{venv_path}/bin/pip'"
+    system "#{venv_path}/bin/pip", "install", "httplib2"
 
     # Debugging: Verify installation of httplib2
-    system "echo 'Checking installed packages in depot_tools Python environment:'"
-    system depot_tools_pip3, "list"
+    system "echo 'Checking installed packages in the virtual environment:'"
+    system "#{venv_path}/bin/pip", "list"
 
     # Explicitly check if httplib2 is installed
     system "echo 'Checking if httplib2 is installed:'"
-    system "#{python_bundled_path}/python3", "-c", "import httplib2; print('httplib2 is installed')"
+    system "#{venv_path}/bin/python", "-c", "import httplib2; print('httplib2 is installed')"
 
     # Debugging: Check Python version and path
     system "echo 'Python version and path:'"
-    system "#{python_bundled_path}/python3", "--version"
-    system "#{python_bundled_path}/python3", "-m", "site"
+    system "#{venv_path}/bin/python", "--version"
+    system "#{venv_path}/bin/python", "-m", "site"
 
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
