@@ -5,6 +5,8 @@ class Libangle < Formula
   version "20250309.1"
   license "BSD-3-Clause"
 
+  CIPD_VERSION = "latest"
+
   bottle do
     root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/libangle-20250309.1"
     sha256 cellar: :any, arm64_sequoia: "748d93eeabbc36f740e84338393deea0167c49da70e069708c54f5767003d12f"
@@ -19,15 +21,16 @@ class Libangle < Formula
 
   def install
     # Clone the depot_tools repository and add it to the PATH
-    depot_tools_path = buildpath/"depot_tools"
+    depot_tools_path = buildpath/"angle/third_party/depot_tools"
     resource("depot_tools").stage(depot_tools_path)
     ENV.prepend_path "PATH", depot_tools_path
 
+    # Ensure cipd and vpython are executable
+    system "chmod", "+x", "#{depot_tools_path}/cipd"
+    system "chmod", "+x", "#{depot_tools_path}/vpython"
+
     # Use Python 3.13
     ENV.prepend_path "PATH", Formula["python@3.13"].opt_bin
-
-    # Ensure vpython and vpython3 from depot_tools are in the PATH
-    ENV.prepend_path "PATH", buildpath/"angle/third_party/depot_tools"
 
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
@@ -42,6 +45,9 @@ class Libangle < Formula
 
       # Bootstrap and sync
       system "python3", "scripts/bootstrap.py"
+
+      # Ensure cipd setup
+      system "bash", "#{depot_tools_path}/cipd_bin_setup.sh"
 
       # Create a custom .ensure file
       custom_ensure_file = buildpath/"custom.ensure"
