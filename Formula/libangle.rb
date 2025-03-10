@@ -46,7 +46,7 @@ class Libangle < Formula
       # Run ensure_bootstrap script
       system "bash", "#{depot_tools_path}/ensure_bootstrap"
 
-      # Debugging: Capture and print the contents of the .ensure file
+      # Capture and print the contents of the .ensure file if it exists
       ensure_file = Dir.glob('/private/tmp/tmp*.ensure').first
       if ensure_file
         puts "Contents of the .ensure file:"
