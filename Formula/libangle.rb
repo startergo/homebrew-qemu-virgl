@@ -1,7 +1,7 @@
 class Libangle < Formula
   desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS, and Android"
-  homepage "https://github.com/google/angle"
-  url "https://chromium.googlesource.com/angle/angle.git", using: :git, revision: "df0f7133799ca6aa0d31802b22d919c6197051cf"
+  homepage "https://chromium.googlesource.com/angle/angle"
+  url "https://chromium.googlesource.com/angle/angle.git", revision: "df0f7133799ca6aa0d31802b22d919c6197051cf"
   version "20250309.1"
   license "BSD-3-Clause"
 
@@ -14,33 +14,34 @@ class Libangle < Formula
   end
 
   depends_on "python@3.13" => :build
-
+  
   resource "depot_tools" do
     url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", branch: "main"
   end
 
   def install
-    # Clone the depot_tools repository and locate it using a wildcard search
+    # Clone the depot_tools repository
     resource("depot_tools").stage(buildpath/"depot_tools_tmp")
-    depot_tools_path = Dir.glob(buildpath/"depot_tools_tmp*/depot_tools").first
-    if depot_tools_path.nil?
+    depot_tools_dir = Dir.glob(buildpath/"depot_tools_tmp*/depot_tools").first
+    if depot_tools_dir.nil?
       odie "depot_tools directory not found"
     end
-    mv depot_tools_path, buildpath/"angle/third_party/depot_tools"
-    ENV.prepend_path "PATH", buildpath/"angle/third_party/depot_tools"
+    mv depot_tools_dir, buildpath/"angle/third_party/depot_tools"
+    depot_tools_path = buildpath/"angle/third_party/depot_tools"
+    ENV.prepend_path "PATH", depot_tools_path
 
     # Use Python 3.13
     ENV.prepend_path "PATH", Formula["python@3.13"].opt_bin
 
     # Check if vpython exists in the expected directory
-    vpython_path = buildpath/"angle/third_party/depot_tools/vpython"
+    vpython_path = "#{depot_tools_path}/vpython"
     unless File.exist?(vpython_path)
       odie "vpython not found in #{vpython_path}"
     end
 
     # Ensure cipd and vpython are executable
     system "chmod", "+x", vpython_path
-    system "chmod", "+x", buildpath/"angle/third_party/depot_tools/cipd"
+    system "chmod", "+x", "#{depot_tools_path}/cipd"
 
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
@@ -57,7 +58,7 @@ class Libangle < Formula
       system "python3", "scripts/bootstrap.py"
 
       # Ensure cipd setup
-      system "bash", buildpath/"angle/third_party/depot_tools/cipd_bin_setup.sh"
+      system "bash", "#{depot_tools_path}/cipd_bin_setup.sh"
 
       # Create a custom .ensure file
       custom_ensure_file = buildpath/"custom.ensure"
