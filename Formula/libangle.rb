@@ -23,33 +23,22 @@ class Libangle < Formula
     resource("depot_tools").stage(depot_tools_path)
     ENV.prepend_path "PATH", depot_tools_path
 
-    # Diagnostic step: List the contents of the current directory
-    system "ls", "-l"
+    # Bootstrap and sync
+    system "python3", "scripts/bootstrap.py"
+    system "gclient", "sync"
 
-    # Check if the angle directory exists
-    angle_path = buildpath/"angle"
-    if angle_path.exist?
-      cd angle_path do
-        # Bootstrap and sync
-        system "python3", "scripts/bootstrap.py"
-        system "gclient", "sync"
+    # Generate build files with GN
+    system "gn", "gen", "out/Release", "--args=is_debug=false"
 
-        # Generate build files with GN
-        system "gn", "gen", "out/Release", "--args=is_debug=false"
+    # Build ANGLE using autoninja
+    system "autoninja", "-C", "out/Release"
 
-        # Build ANGLE using autoninja
-        system "autoninja", "-C", "out/Release"
-
-        # Install the built libraries and headers
-        lib.install "out/Release/libabsl.dylib"
-        lib.install "out/Release/libEGL.dylib"
-        lib.install "out/Release/libGLESv2.dylib"
-        lib.install "out/Release/libchrome_zlib.dylib"
-        include.install Dir["include/*"]
-      end
-    else
-      odie "The angle directory does not exist. Please ensure the angle repository is downloaded."
-    end
+    # Install the built libraries and headers
+    lib.install "out/Release/libabsl.dylib"
+    lib.install "out/Release/libEGL.dylib"
+    lib.install "out/Release/libGLESv2.dylib"
+    lib.install "out/Release/libchrome_zlib.dylib"
+    include.install Dir["include/*"]
   end
 
   test do
