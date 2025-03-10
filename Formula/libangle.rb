@@ -9,8 +9,8 @@ class Libangle < Formula
 
   bottle do
     root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/libangle-20250309.1"
-    sha256 cellar: :any, arm64_sequoia: "748d93eeabbc36f740e84338393deea0167c49da70e069708c54f5767003d12f"
-    sha256 cellar: :any, monterey: "748d93eeabbc36f740e84338393deea0167c49da70e069708c54f5767003d12f"
+    sha256 cellar: :any, arm64_sequoia: "748d93eeabbc36f740e8438393deea0167c49da70e069708c54f5767003d12f"
+    sha256 cellar: :any, monterey: "748d93eeabbc36f740e8438393deea0167c49da70e069708c54f5767003d12f"
   end
 
   depends_on "ninja" => :build
@@ -59,22 +59,13 @@ class Libangle < Formula
           system "git", "fetch", "--unshallow"
         end
         system "python3", "build/gen.py"
-        system "autoninja", "-j", "2", "-C", "out"  # Limit to 2 parallel jobs
+        system "autoninja", "-j", "2", "-C", "out"
         bin.install "out/gn"
       end
     end
 
-    # Detect and use the bundled Python version dynamically
-    python_bundled_path = Dir["#{cached_depot_tools_path}/python*-bin"].first
-    if python_bundled_path.nil? || !File.directory?(python_bundled_path)
-      odie "Bundled Python not found in depot_tools"
-    end
-
-    ENV.prepend_path "PATH", python_bundled_path
-
-    # Ensure cipd and vpython3 are executable
-    system "chmod", "+x", "#{cached_depot_tools_path}/vpython3"
-    system "chmod", "+x", "#{cached_depot_tools_path}/cipd"
+    # Remove bundled Python setup and use Homebrew Python for virtual environment
+    ENV.prepend_path "PATH", Formula["python@3.9"].opt_bin
 
     # Set VPYTHON_BYPASS to use system Python directly
     ENV["VPYTHON_BYPASS"] = "manually managed python not supported by chrome operations"
@@ -134,9 +125,9 @@ class Libangle < Formula
       system "gn", "gen", "out/Release", "--args=is_debug=false"
 
       # Build ANGLE using autoninja
-      system "autoninja", "-j", "2", "-C", "out/Release"  # Limit to 2 parallel jobs
+      system "autoninja", "-j", "2", "-C", "out/Release"
 
-      # Install the built libraries and headers
+      # Install the build libraries and headers
       lib.install "out/Release/libabsl.dylib"
       lib.install "out/Release/libEGL.dylib"
       lib.install "out/Release/libGLESv2.dylib"
