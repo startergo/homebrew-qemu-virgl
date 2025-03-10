@@ -23,6 +23,10 @@ class Libangle < Formula
     resource("depot_tools").stage(depot_tools_path)
     ENV.prepend_path "PATH", depot_tools_path
 
+    # Reset any local changes in the repository
+    system "git", "checkout", "."
+    system "git", "clean", "-fdx"
+
     # Bootstrap and sync
     system "python3", "scripts/bootstrap.py"
     system "gclient", "sync"
