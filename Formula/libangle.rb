@@ -13,8 +13,6 @@ class Libangle < Formula
     sha256 cellar: :any, monterey: "748d93eeabbc36f740e84338393deea0167c49da70e069708c54f5767003d12f"
   end
 
-  depends_on "python@3.13" => :build
-
   def install
     # Path to the cached depot_tools directory
     cached_depot_tools_path = HOMEBREW_CACHE/"libangle--depot_tools--git"
@@ -30,12 +28,20 @@ class Libangle < Formula
     # Create a symbolic link for vpython
     ln_sf "#{cached_depot_tools_path}/vpython3", "#{cached_depot_tools_path}/vpython"
 
-    # Use Python 3.13
-    ENV.prepend_path "PATH", Formula["python@3.13"].opt_bin
+    # Detect and use the bundled Python version dynamically
+    python_bundled_path = Dir["#{cached_depot_tools_path}/python*-bin"].first
+    if python_bundled_path.nil? || !File.directory?(python_bundled_path)
+      odie "Bundled Python not found in depot_tools"
+    end
+
+    ENV.prepend_path "PATH", python_bundled_path
 
     # Ensure cipd and vpython3 are executable
     system "chmod", "+x", "#{cached_depot_tools_path}/vpython3"
     system "chmod", "+x", "#{cached_depot_tools_path}/cipd"
+
+    # Set VPYTHON_BYPASS to use system Python directly
+    ENV["VPYTHON_BYPASS"] = "manually managed python not supported by chrome operations"
 
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
