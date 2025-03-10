@@ -24,23 +24,21 @@ class Libangle < Formula
       odie "Cached depot_tools directory not found: #{cached_depot_tools_path}"
     end
 
-    # Copy the cached depot_tools directory to the buildpath
-    depot_tools_path = buildpath/"angle/third_party/depot_tools"
-    cp_r "#{cached_depot_tools_path}/.", depot_tools_path
-    ENV.prepend_path "PATH", depot_tools_path
+    # Use the cached depot_tools directory directly
+    ENV.prepend_path "PATH", cached_depot_tools_path
 
     # Use Python 3.13
     ENV.prepend_path "PATH", Formula["python@3.13"].opt_bin
 
     # Check if vpython exists in the expected directory
-    vpython_path = "#{depot_tools_path}/vpython"
+    vpython_path = "#{cached_depot_tools_path}/vpython"
     unless File.exist?(vpython_path)
       odie "vpython not found in #{vpython_path}"
     end
 
     # Ensure cipd and vpython are executable
     system "chmod", "+x", vpython_path
-    system "chmod", "+x", "#{depot_tools_path}/cipd"
+    system "chmod", "+x", "#{cached_depot_tools_path}/cipd"
 
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
@@ -57,7 +55,7 @@ class Libangle < Formula
       system "python3", "scripts/bootstrap.py"
 
       # Ensure cipd setup
-      system "bash", "#{depot_tools_path}/cipd_bin_setup.sh"
+      system "bash", "#{cached_depot_tools_path}/cipd_bin_setup.sh"
 
       # Create a custom .ensure file
       custom_ensure_file = buildpath/"custom.ensure"
