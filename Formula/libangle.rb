@@ -44,7 +44,7 @@ class Libangle < Formula
       system "python3", "scripts/bootstrap.py"
 
       # Search for .ensure files
-      ensure_files = Dir.glob('/private/tmp/*.ensure')
+      ensure_files = Dir.glob('/private/tmp/*').select { |f| f.include?('.ensure') }
       if ensure_files.any?
         ensure_files.each do |file|
           puts "Found .ensure file: #{file}"
