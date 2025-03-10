@@ -20,12 +20,9 @@ class Libangle < Formula
   def install
     # Clone the depot_tools repository and add it to the PATH
     resource("depot_tools").stage do
-      depot_tools_path = Pathname.pwd
+      depot_tools_path = Pathname.pwd.realpath
       ENV.prepend_path "PATH", depot_tools_path
     end
-
-    # Ensure depot_tools is available before running commands
-    ENV.prepend_path "PATH", depot_tools_path
 
     # Run gclient config and sync
     system "gclient", "config", "--name", ".", "https://chromium.googlesource.com/angle/angle.git"
