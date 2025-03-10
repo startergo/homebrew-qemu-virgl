@@ -24,28 +24,22 @@ class Libangle < Formula
       ENV.prepend_path "PATH", depot_tools_path
     end
 
-    # Navigate to the downloaded angle source directory
-    cd buildpath do
-      # Configure gclient and sync
-      system "gclient", "config", "--name", ".", "https://chromium.googlesource.com/angle/angle.git"
-      system "gclient", "sync"
+    # Run gclient config and sync
+    system "gclient", "config", "--name", "angle", "https://chromium.googlesource.com/angle/angle.git"
+    system "gclient", "sync"
 
-      # Generate build files with GN
-      system "gn", "gen", "out/Release", "--args=is_debug=false"
+    # Generate build files with GN
+    system "gn", "gen", "out/Release", "--args=is_debug=false"
 
-      # Diagnostic step: Check the contents of the build directory and the output log before building
-      system "ls", "-l", "out/Release"
-
-      # Build ANGLE using autoninja
-      system "autoninja", "-C", "out/Release"
+    # Build ANGLE using autoninja
+    system "autoninja", "-C", "out/Release"
       
-      # Install the built libraries and headers
-      lib.install "out/Release/libabsl.dylib"
-      lib.install "out/Release/libEGL.dylib"
-      lib.install "out/Release/libGLESv2.dylib"
-      lib.install "out/Release/libchrome_zlib.dylib"
-      include.install Dir["include/*"]
-    end
+    # Install the built libraries and headers
+    lib.install "out/Release/libabsl.dylib"
+    lib.install "out/Release/libEGL.dylib"
+    lib.install "out/Release/libGLESv2.dylib"
+    lib.install "out/Release/libchrome_zlib.dylib"
+    include.install Dir["include/*"]
   end
 
   test do
