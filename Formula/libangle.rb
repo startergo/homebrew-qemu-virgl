@@ -50,10 +50,13 @@ class Libangle < Formula
     # Install necessary Python dependencies using the correct pip3
     depot_tools_pip3 = "#{python_bundled_path}/pip3"
     system "echo 'Using pip3 located at: #{depot_tools_pip3}'"
-    system depot_tools_pip3, "install", "httplib2"
+    
+    # Log the output of the pip3 install command to a file
+    system "#{depot_tools_pip3} install httplib2 > #{buildpath}/pip3_install.log 2>&1"
 
     # Check the exit status of the pip3 install command
     if !$?.success?
+      system "cat #{buildpath}/pip3_install.log"
       odie "Failed to install httplib2 using pip3"
     end
 
