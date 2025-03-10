@@ -12,7 +12,6 @@ class Libangle < Formula
   end
 
   depends_on "python@3.13" => :build
-  depends_on "pipx" => :build
 
   resource "depot_tools" do
     url "https://chromium.googlesource.com/chromium/tools/depot_tools.git", branch: "main"
@@ -27,8 +26,11 @@ class Libangle < Formula
     # Use Python 3.13
     ENV.prepend_path "PATH", Formula["python@3.13"].opt_bin
 
-    # Install vpython using pipx
-    system "pipx", "install", "vpython"
+    # Create a virtual environment and install vpython
+    venv_path = buildpath/"venv"
+    system "python3", "-m", "venv", venv_path
+    system venv_path/"bin/pip", "install", "vpython"
+    ENV.prepend_path "PATH", venv_path/"bin"
 
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
