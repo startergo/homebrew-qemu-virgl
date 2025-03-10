@@ -46,8 +46,11 @@ class Libangle < Formula
       end
     end
 
-    # If gn binary is not executable, build gn from source
-    if !File.executable?(gn_path)
+    # Check if gn binary version is correct
+    gn_version_output = `#{gn_path} --version`
+    if gn_version_output.include?("gn.py: Could not find checkout in any parent of the current path")
+      # If not correct, delete and recompile gn from source
+      File.delete(gn_path) if File.exist?(gn_path)
       gn_build_path = buildpath/"gn"
       system "git", "clone", "https://gn.googlesource.com/gn", gn_build_path
       cd gn_build_path do
@@ -101,12 +104,13 @@ class Libangle < Formula
     # Increase file descriptor limit
     system "ulimit", "-n", "4096"
 
-    # Generate build files with GN
-    # Use 'ulimit' command in a subshell to ensure it applies to gn command
-    system "bash", "-c", "ulimit -n 4096; gn gen out/Release --args=is_debug=false"
-
-    # Build ANGLE using autoninja
-    system "autoninja", "-j", "2", "-C", "out/Release"
+    # Set up and run gn within the context of a Chromium checkout
+    checkout_path = buildpath/"angle"
+    system "git", "clone", "--recurse-submodules", "https://chromium.googlesource.com/angle/angle.git", checkout_path
+    cd checkout_path do
+      system "gn", "gen", "out/Release", "--args=is_debug=false"
+      system "autoninja", "-j", "2", "-C", "out/Release"
+    end
 
     # Install the build libraries and headers
     lib.install "out/Release/libabsl.dylib"
