@@ -27,6 +27,9 @@ class Libangle < Formula
 
     # Create a symbolic link for vpython
     ln_sf "#{cached_depot_tools_path}/vpython3", "#{cached_depot_tools_path}/vpython"
+    
+    # Create a symbolic link for gn
+    ln_sf "#{cached_depot_tools_path}/gn", "#{cached_depot_tools_path}/gn"
 
     # Detect and use the bundled Python version dynamically
     python_bundled_path = Dir["#{cached_depot_tools_path}/python*-bin"].first
@@ -36,9 +39,10 @@ class Libangle < Formula
 
     ENV.prepend_path "PATH", python_bundled_path
 
-    # Ensure cipd and vpython3 are executable
+    # Ensure cipd, vpython3, and gn are executable
     system "chmod", "+x", "#{cached_depot_tools_path}/vpython3"
     system "chmod", "+x", "#{cached_depot_tools_path}/cipd"
+    system "chmod", "+x", "#{cached_depot_tools_path}/gn"
 
     # Set VPYTHON_BYPASS to use system Python directly
     ENV["VPYTHON_BYPASS"] = "manually managed python not supported by chrome operations"
@@ -86,9 +90,9 @@ class Libangle < Formula
       # Ensure cipd setup
       system "bash", "#{cached_depot_tools_path}/cipd_bin_setup.sh"
 
-      # Commented out gclient sync
-      # system "echo 'Running gclient sync -D'"
-      # system "gclient", "sync", "-D", "--verbose"
+      # Increase system resource limits
+      system "ulimit", "-n", "4096"
+      system "ulimit", "-u", "unlimited"
 
       # Generate build files with GN
       system "gn", "gen", "out/Release", "--args=is_debug=false"
