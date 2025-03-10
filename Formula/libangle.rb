@@ -25,10 +25,18 @@ class Libangle < Formula
     # Use the cached depot_tools directory directly
     ENV.prepend_path "PATH", cached_depot_tools_path
 
+    # Ensure the directory is writable
+    unless File.writable?(cached_depot_tools_path)
+      odie "Cached depot_tools directory is not writable: #{cached_depot_tools_path}"
+    end
+
     # Create symbolic links for vpython and gn if they don't exist
     ln_sf "#{cached_depot_tools_path}/vpython3", "#{cached_depot_tools_path}/vpython" unless File.symlink?("#{cached_depot_tools_path}/vpython")
     gn_path = "#{cached_depot_tools_path}/gn"
-    unless File.exist?(gn_path) && !File.symlink?(gn_path)
+    if File.symlink?(gn_path)
+      File.delete(gn_path)
+    end
+    unless File.exist?(gn_path)
       system "curl -o #{gn_path} -L https://storage.googleapis.com/chromium-gn/gn/mac-amd64/gn"
     end
 
