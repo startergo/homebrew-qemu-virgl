@@ -18,32 +18,35 @@ class Libangle < Formula
   end
 
   def install
-    # Clone the depot_tools repository
+    # Clone the depot_tools repository and add it to the PATH
     resource("depot_tools").stage do
       depot_tools_path = Pathname.pwd
       ENV.prepend_path "PATH", depot_tools_path
     end
 
-    # Run bootstrap script and sync the repository
-    system "gclient", "config", "--name", ".", "https://chromium.googlesource.com/angle/angle.git"
-    system "gclient", "sync"
+    # Navigate to the downloaded angle source directory
+    cd buildpath do
+      # Run gclient config and sync
+      system "gclient", "config", "--name", ".", "https://chromium.googlesource.com/angle/angle.git"
+      system "gclient", "sync"
 
-    # Generate build files with GN
-    system "gn", "gen", "--args=is_debug=false out/Release 2>&1 | tee gn_gen_output.txt"
+      # Generate build files with GN
+      system "gn", "gen", "--args=is_debug=false out/Release 2>&1 | tee gn_gen_output.txt"
 
-    # Diagnostic step: Check the contents of the build directory and the output log before building
-    system "ls", "-l", "out/Release"
-    system "cat", "gn_gen_output.txt"
+      # Diagnostic step: Check the contents of the build directory and the output log before building
+      system "ls", "-l", "out/Release"
+      system "cat", "gn_gen_output.txt"
 
-    # Build ANGLE using autoninja
-    system "autoninja", "-C", "out/Release"
+      # Build ANGLE using autoninja
+      system "autoninja", "-C", "out/Release"
       
-    # Install the built libraries and headers
-    lib.install "out/Release/libabsl.dylib"
-    lib.install "out/Release/libEGL.dylib"
-    lib.install "out/Release/libGLESv2.dylib"
-    lib.install "out/Release/libchrome_zlib.dylib"
-    include.install Dir["include/*"]
+      # Install the built libraries and headers
+      lib.install "out/Release/libabsl.dylib"
+      lib.install "out/Release/libEGL.dylib"
+      lib.install "out/Release/libGLESv2.dylib"
+      lib.install "out/Release/libchrome_zlib.dylib"
+      include.install Dir["include/*"]
+    end
   end
 
   test do
