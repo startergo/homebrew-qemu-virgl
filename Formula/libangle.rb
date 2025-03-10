@@ -22,11 +22,11 @@ class Libangle < Formula
   def install
     # Clone the depot_tools repository
     resource("depot_tools").stage(buildpath/"depot_tools_tmp")
-    depot_tools_path = Dir.glob(buildpath/"depot_tools_tmp*/depot_tools").first
-    if depot_tools_path.nil?
+    depot_tools_dir = Dir.glob(buildpath/"depot_tools_tmp*/depot_tools").first
+    if depot_tools_dir.nil?
       odie "depot_tools directory not found"
     end
-    mv depot_tools_path, buildpath/"angle/third_party/depot_tools"
+    mv depot_tools_dir, buildpath/"angle/third_party/depot_tools"
     depot_tools_path = buildpath/"angle/third_party/depot_tools"
     ENV.prepend_path "PATH", depot_tools_path
 
