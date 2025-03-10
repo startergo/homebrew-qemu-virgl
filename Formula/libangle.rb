@@ -43,8 +43,9 @@ class Libangle < Formula
     # Set VPYTHON_BYPASS to use system Python directly
     ENV["VPYTHON_BYPASS"] = "manually managed python not supported by chrome operations"
 
-    # Install necessary Python dependencies
-    system "pip3", "install", "httplib2"
+    # Install necessary Python dependencies using the correct pip3
+    depot_tools_pip3 = "#{cached_depot_tools_path}/python3/bin/pip3"
+    system depot_tools_pip3, "install", "httplib2"
 
     # Remove existing repository directory if it exists
     if (buildpath/"angle").exist?
