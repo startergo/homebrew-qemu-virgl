@@ -1,5 +1,5 @@
 class Libangle < Formula
-  desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS and Android"
+  desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS, and Android"
   homepage "https://github.com/google/angle"
   url "https://chromium.googlesource.com/angle/angle.git", using: :git, revision: "df0f7133799ca6aa0d31802b22d919c6197051cf"
   version "20250309.1"
@@ -43,14 +43,8 @@ class Libangle < Formula
       # Bootstrap and sync
       system "python3", "scripts/bootstrap.py"
 
-      # Debugging: Print the contents of the .ensure file
-      ensure_file = Dir.glob('/private/tmp/tmp*.ensure').first
-      if ensure_file
-        puts "Contents of the .ensure file:"
-        puts File.read(ensure_file)
-      else
-        puts "No .ensure file found."
-      end
+      # Run ensure_bootstrap script
+      system "bash", "#{depot_tools_path}/ensure_bootstrap"
 
       # Run gclient sync
       system "gclient", "sync"
