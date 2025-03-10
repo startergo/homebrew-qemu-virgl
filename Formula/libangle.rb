@@ -3,7 +3,7 @@ class Libangle < Formula
   homepage "https://chromium.googlesource.com/angle/angle"
   url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20250309.1/angle-20250309.1.tar.gz"
   version "20250309.1"
-  sha256 "PUT_THE_SHA256_HASH_HERE"
+  sha256 "39b00a7e145df3678aa4d498293e2d4800f6d887bac04b081c024c50af4b24cb"
   license "BSD-3-Clause"
 
   bottle do
