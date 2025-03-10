@@ -21,9 +21,9 @@ class Libangle < Formula
     # Path to the cached depot_tools directory
     cached_depot_tools_path = HOMEBREW_CACHE/"libangle--depot_tools--git"
 
-    # Check if the cached depot_tools directory exists
+    # Download depot_tools if not cached
     if !cached_depot_tools_path.directory?
-      odie "Cached depot_tools directory not found: #{cached_depot_tools_path}"
+      system "git", "clone", "https://chromium.googlesource.com/chromium/tools/depot_tools.git", cached_depot_tools_path
     end
 
     # Use the cached depot_tools directory directly
@@ -79,9 +79,11 @@ class Libangle < Formula
     # Set VPYTHON_BYPASS to use system Python directly
     ENV["VPYTHON_BYPASS"] = "manually managed python not supported by chrome operations"
 
-    # Debugging: Print environment variables
+    # Debugging: Print environment variables and limits
     system "echo 'Environment variables:'"
     system "env"
+    system "echo 'Current limits:'"
+    system "ulimit -a"
 
     # Create a virtual environment for Python dependencies
     venv_path = buildpath/"venv"
