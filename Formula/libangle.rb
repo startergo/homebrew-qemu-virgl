@@ -59,7 +59,7 @@ class Libangle < Formula
           system "git", "fetch", "--unshallow"
         end
         system "python3", "build/gen.py"
-        system "autoninja", "-C", "out"  # Use autoninja instead of ninja
+        system "autoninja", "-j", "2", "-C", "out"  # Limit to 2 parallel jobs
         bin.install "out/gn"
       end
     end
@@ -132,7 +132,7 @@ class Libangle < Formula
       system "gn", "gen", "out/Release", "--args=is_debug=false"
 
       # Build ANGLE using autoninja
-      system "autoninja", "-C", "out/Release"
+      system "autoninja", "-j", "2", "-C", "out/Release"  # Limit to 2 parallel jobs
 
       # Install the built libraries and headers
       lib.install "out/Release/libabsl.dylib"
