@@ -54,14 +54,15 @@ class Libangle < Formula
       # Checkout the specific revision
       system "git", "checkout", "df0f7133799ca6aa0d31802b22d919c6197051cf"
 
-      # Bootstrap and sync
+      # Bootstrap
       system "python3", "scripts/bootstrap.py"
 
       # Ensure cipd setup
       system "bash", "#{cached_depot_tools_path}/cipd_bin_setup.sh"
 
-      # Run gclient sync with dependencies
-      system "gclient", "sync", "-D"
+      # Run gclient sync with dependencies and log output
+      system "echo 'Running gclient sync -D'"
+      system "gclient", "sync", "-D", "--verbose"
 
       # Generate build files with GN
       system "gn", "gen", "out/Release", "--args=is_debug=false"
