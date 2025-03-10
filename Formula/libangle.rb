@@ -42,6 +42,17 @@ class Libangle < Formula
 
       # Bootstrap and sync
       system "python3", "scripts/bootstrap.py"
+
+      # Debugging: Print the contents of the .ensure file
+      ensure_file = Dir.glob('/private/tmp/tmp*.ensure').first
+      if ensure_file
+        puts "Contents of the .ensure file:"
+        puts File.read(ensure_file)
+      else
+        puts "No .ensure file found."
+      end
+
+      # Run gclient sync
       system "gclient", "sync"
 
       # Generate build files with GN
