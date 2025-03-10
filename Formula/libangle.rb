@@ -46,6 +46,22 @@ class Libangle < Formula
       # Run ensure_bootstrap script
       system "bash", "#{depot_tools_path}/ensure_bootstrap"
 
+      # Debugging: Capture and print the contents of the .ensure file
+      ensure_file = Dir.glob('/private/tmp/tmp*.ensure').first
+      if ensure_file
+        puts "Contents of the .ensure file:"
+        contents = File.read(ensure_file)
+        puts contents
+
+        # Attempt to correct or remove the problematic setting
+        fixed_contents = contents.lines.reject { |line| line.include?("$OverrideInstallMode") }.join
+        File.write(ensure_file, fixed_contents)
+        puts "Fixed .ensure file contents:"
+        puts fixed_contents
+      else
+        puts "No .ensure file found."
+      end
+
       # Run gclient sync
       system "gclient", "sync"
 
