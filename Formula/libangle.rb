@@ -26,16 +26,15 @@ class Libangle < Formula
 
     # Navigate to the downloaded angle source directory
     cd buildpath do
-      # Run gclient config and sync
+      # Configure gclient and sync
       system "gclient", "config", "--name", ".", "https://chromium.googlesource.com/angle/angle.git"
       system "gclient", "sync"
 
       # Generate build files with GN
-      system "gn", "gen", "--args=is_debug=false out/Release 2>&1 | tee gn_gen_output.txt"
+      system "gn", "gen", "out/Release", "--args=is_debug=false"
 
       # Diagnostic step: Check the contents of the build directory and the output log before building
       system "ls", "-l", "out/Release"
-      system "cat", "gn_gen_output.txt"
 
       # Build ANGLE using autoninja
       system "autoninja", "-C", "out/Release"
