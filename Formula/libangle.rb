@@ -23,8 +23,8 @@ class Libangle < Formula
     resource("depot_tools").stage(depot_tools_path)
     ENV.prepend_path "PATH", depot_tools_path
 
-    # Run gclient config and sync with all dependencies
-    system "gclient", "config", "--unmanaged", "--name", ".", "https://chromium.googlesource.com/angle/angle.git"
+    # Run gclient config and sync
+    system "gclient", "config", "--unmanaged", "--name", "angle", "https://chromium.googlesource.com/angle/angle.git"
     system "gclient", "sync", "--with_branch_heads", "--with_tags"
 
     # Diagnostic step: Check the contents of the angle directory after sync
