@@ -52,6 +52,11 @@ class Libangle < Formula
     system "echo 'Using pip3 located at: #{depot_tools_pip3}'"
     system depot_tools_pip3, "install", "httplib2"
 
+    # Check the exit status of the pip3 install command
+    if !$?.success?
+      odie "Failed to install httplib2 using pip3"
+    end
+
     # Debugging: Verify installation of httplib2
     system "echo 'Checking installed packages in depot_tools Python environment:'"
     system depot_tools_pip3, "list"
