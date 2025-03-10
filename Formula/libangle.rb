@@ -1,10 +1,14 @@
 class Libangle < Formula
-  desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS, and Android"
-  homepage "https://chromium.googlesource.com/angle/angle"
-  url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20250309.1/angle-20250309.1.tar.gz"
-  version "20250309.1"
-  sha256 "39b00a7e145df3678aa4d498293e2d4800f6d887bac04b081c024c50af4b24cb"
+  desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS and Android"
+  homepage "https://github.com/google/angle"
+  url "https://github.com/google/angle.git", using: :git, revision: "df0f7133799ca6aa0d31802b22d919c6197051cf"
+  version "2025.03.08.1"
   license "BSD-3-Clause"
+
+  bottle do
+    root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20250309.1/angle-20250309.1.tar.gz"
+    sha256 cellar: :any, arm64_sequoia: "39b00a7e145df3678aa4d498293e2d4800f6d887bac04b081c024c50af4b24cb"
+  end
 
   depends_on "ninja" => :build
   depends_on "python@3.9" => :build
