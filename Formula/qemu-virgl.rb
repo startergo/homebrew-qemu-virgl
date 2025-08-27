@@ -66,6 +66,10 @@ class QemuVirgl < Formula
     venv_path = buildpath/"venv"
     system python3, "-m", "venv", venv_path
     venv_python = venv_path/"bin/python"
+
+    system venv_python, "-m", "pip", "install", "--upgrade", "pip==25.1.1"
+    pip_ver = Utils.safe_popen_read(venv_python, "-m", "pip", "--version").strip
+    ohai "pip downgraded to: #{pip_ver}"
     
     resource("tomli").stage do
       system venv_python, "-m", "pip", "install", "."
