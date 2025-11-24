@@ -76,7 +76,7 @@ class Libangle < Formula
     # Download ANGLE using the same method as run-arm.sh
     system "git", "init"
     system "git", "fetch", @@angle_repo
-    system "git", "checkout", "FETCH_HEAD"
+    system "git", "checkout", "-f", "FETCH_HEAD"  # Force checkout to overwrite dummy tarball files
     
     ohai "Installing Chromium build dependencies..."
     
