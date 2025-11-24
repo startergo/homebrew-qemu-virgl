@@ -74,6 +74,14 @@ jobs:
           qemu-system-aarch64 --version
           timeout 30s qemu-system-aarch64 -machine virt -accel tcg -nographic -m 512M || true
 
+      - name: Show libangle logs on failure
+        if: failure()
+        run: |
+          echo "=== Libangle build logs ==="
+          for log in ~/Library/Logs/Homebrew/libangle/*.log; do
+            [ -f "$log" ] && echo "--- $(basename $log) ---" && cat "$log"
+          done
+          
       - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
