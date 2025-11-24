@@ -142,18 +142,17 @@ class Libangle < Formula
       checkout_telemetry_dependencies = false
     EOS
 
-    # Apply MacPorts-style patches
-    # Remove duplicate use_cxx23 declaration
-    inreplace "build/config/compiler/compiler.gni", /^  use_cxx23 = false$/, ""
-
-    # Use system toolchain - make replacements flexible to handle different ANGLE versions
+    # Apply MacPorts-style patches (make them optional to support different ANGLE versions)
+    ohai "Applying patches for system toolchain..."
+    
+    # Use system toolchain
     inreplace "build/toolchain/apple/toolchain.gni" do |s|
-      s.gsub!(/^\s+prefix = rebase_path/, "#    prefix = rebase_path")
-      s.gsub!(/^\s+compiler_prefix = /, "#    compiler_prefix = ")
+      s.gsub!(/^\s+prefix = rebase_path/, "#    prefix = rebase_path") if s.include?("prefix = rebase_path")
+      s.gsub!(/^\s+compiler_prefix = /, "#    compiler_prefix = ") if s.include?("compiler_prefix = ")
       s.gsub!(/_cc = "\$\{prefix\}clang"/, '_cc = "clang"')
       s.gsub!(/_cxx = "\$\{prefix\}clang\+\+"/, '_cxx = "clang++"')
-      s.gsub!(/cc = compiler_prefix \+ _cc/, "cc = _cc")
-      s.gsub!(/cxx = compiler_prefix \+ _cxx/, "cxx = _cxx")
+      s.gsub!(/cc = compiler_prefix \+ _cc/, "cc = _cc") if s.include?("compiler_prefix")
+      s.gsub!(/cxx = compiler_prefix \+ _cxx/, "cxx = _cxx") if s.include?("compiler_prefix")
       s.gsub!(/ld = _cxx/, "ld = cxx")
       s.gsub!(/nm = "\$\{prefix\}llvm-nm"/, 'nm = "nm"')
       s.gsub!(/otool = "\$\{prefix\}llvm-otool"/, 'otool = "otool"')
@@ -161,19 +160,6 @@ class Libangle < Formula
       s.gsub!(/_installnametoolpath = "\$\{prefix\}llvm-install-name-tool"/, '_installnametoolpath = "install_name_tool"')
       s.gsub!(/rebase_path\("\/\/tools\/clang\/dsymutil\/bin\/dsymutil",\s+root_build_dir\)/, '"dsymutil"')
     end
-
-    # Remove macOS SDK version check
-    inreplace "src/common/platform.h", /#error macOS 12 SDK or newer is required/, ""
-
-    # Remove GCC-specific warning flags
-    inreplace "build/config/compiler/BUILD.gn" do |s|
-      s.gsub!(/"-Wno-maybe-uninitialized"/, "")
-      s.gsub!(/"-Wno-packed-not-aligned"/, "")
-      s.gsub!(/"-Wno-class-memaccess"/, "")
-    end
-
-    # Set commit position placeholder
-    inreplace "src/commit_id.py", /commit_position = '0'/, "commit_position = '0'"
 
     # Create dummy rust-toolchain VERSION
     (buildpath/"third_party/rust-toolchain").mkpath
@@ -183,14 +169,18 @@ class Libangle < Formula
     (buildpath/"third_party/rapidjson/src").mkpath
     ln_s Formula["rapidjson"].opt_include, buildpath/"third_party/rapidjson/src/include"
 
-    # Comment out Rust import
-    inreplace "testing/test.gni",
-      /^import\("\/\/build\/rust\/rust_static_library.gni"\)/,
-      '#import("//build/rust/rust_static_library.gni")'
+    # Comment out Rust import if it exists
+    if File.exist?("testing/test.gni") && File.read("testing/test.gni").include?("rust_static_library.gni")
+      inreplace "testing/test.gni",
+        /^import\("\/\/build\/rust\/rust_static_library.gni"\)/,
+        '#import("//build/rust/rust_static_library.gni")'
+    end
 
-    # Remove sanitize_c_array_bounds block
-    ohai "Removing sanitize_c_array_bounds block..."
-    inreplace "gni/angle.gni", /# See https:\/\/crbug.com\/386992829.*?^  \}/m, ""
+    # Remove sanitize_c_array_bounds block if it exists
+    if File.exist?("gni/angle.gni") && File.read("gni/angle.gni").include?("sanitize_c_array_bounds")
+      ohai "Removing sanitize_c_array_bounds block..."
+      inreplace "gni/angle.gni", /# See https:\/\/crbug.com\/386992829.*?^  \}/m, ""
+    end
 
     ohai "Starting GN configuration..."
     # Configure and build with gn and ninja
