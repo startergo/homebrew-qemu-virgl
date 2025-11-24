@@ -45,7 +45,17 @@ jobs:
 
       - name: Install gn and rapidjson for ANGLE build
         run: |
-          brew install gn rapidjson
+          # Install rapidjson from Homebrew
+          brew install rapidjson
+          
+          # Build gn from source
+          git clone https://gn.googlesource.com/gn
+          cd gn
+          python3 build/gen.py
+          ninja -C out
+          sudo cp out/gn /usr/local/bin/
+          cd ..
+          rm -rf gn
 
       - name: Build dependencies
         run: |
