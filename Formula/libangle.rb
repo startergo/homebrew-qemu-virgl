@@ -145,14 +145,18 @@ class Libangle < Formula
     # Apply MacPorts-style patches (make them optional to support different ANGLE versions)
     ohai "Applying patches for system toolchain..."
     
-    # Use system toolchain
+    # Use system toolchain - check file content first
+    toolchain_content = File.read("build/toolchain/apple/toolchain.gni")
+    has_prefix = toolchain_content.include?("prefix = rebase_path")
+    has_compiler_prefix = toolchain_content.include?("compiler_prefix = ")
+    
     inreplace "build/toolchain/apple/toolchain.gni" do |s|
-      s.gsub!(/^\s+prefix = rebase_path/, "#    prefix = rebase_path") if s.include?("prefix = rebase_path")
-      s.gsub!(/^\s+compiler_prefix = /, "#    compiler_prefix = ") if s.include?("compiler_prefix = ")
+      s.gsub!(/^\s+prefix = rebase_path/, "#    prefix = rebase_path") if has_prefix
+      s.gsub!(/^\s+compiler_prefix = /, "#    compiler_prefix = ") if has_compiler_prefix
       s.gsub!(/_cc = "\$\{prefix\}clang"/, '_cc = "clang"')
       s.gsub!(/_cxx = "\$\{prefix\}clang\+\+"/, '_cxx = "clang++"')
-      s.gsub!(/cc = compiler_prefix \+ _cc/, "cc = _cc") if s.include?("compiler_prefix")
-      s.gsub!(/cxx = compiler_prefix \+ _cxx/, "cxx = _cxx") if s.include?("compiler_prefix")
+      s.gsub!(/cc = compiler_prefix \+ _cc/, "cc = _cc") if has_compiler_prefix
+      s.gsub!(/cxx = compiler_prefix \+ _cxx/, "cxx = _cxx") if has_compiler_prefix
       s.gsub!(/ld = _cxx/, "ld = cxx")
       s.gsub!(/nm = "\$\{prefix\}llvm-nm"/, 'nm = "nm"')
       s.gsub!(/otool = "\$\{prefix\}llvm-otool"/, 'otool = "otool"')
