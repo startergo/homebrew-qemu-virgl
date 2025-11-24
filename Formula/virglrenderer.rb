@@ -25,7 +25,17 @@ class Virglrenderer < Formula
     sha256 "3f76066d3b5c9146108c6723b374497b79492dbbaf9936525e9dfb4fc7003d6c"
   end
 
+  resource "pyyaml" do
+    url "https://files.pythonhosted.org/packages/54/ed/79a089b6be93607fa5cdaedf301d7dfb23af5f25c398d5ead2525b063e17/pyyaml-6.0.2.tar.gz"
+    sha256 "d584d9ec91ad65861cc08d42e834324ef890a082e591037abe114850ff7bbc3e"
+  end
+
   def install
+    # Install Python dependencies
+    python3 = Formula["python@3.13"].opt_bin/"python3.13"
+    system python3, "-m", "pip", "install", "--prefix=#{buildpath}/vendor", resource("pyyaml")
+    ENV.prepend_path "PYTHONPATH", "#{buildpath}/vendor/lib/python3.13/site-packages"
+    
     # Use absolute paths to be absolutely certain
     epoxy = Formula["startergo/qemu-virgl/libepoxy-angle"]
     angle = Formula["startergo/qemu-virgl/libangle"]
