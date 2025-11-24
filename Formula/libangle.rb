@@ -146,11 +146,10 @@ class Libangle < Formula
     # Remove duplicate use_cxx23 declaration
     inreplace "build/config/compiler/compiler.gni", /^  use_cxx23 = false$/, ""
 
-    # Use system toolchain
+    # Use system toolchain - make replacements flexible to handle different ANGLE versions
     inreplace "build/toolchain/apple/toolchain.gni" do |s|
-      s.gsub!(/^    prefix = rebase_path/, "#    prefix = rebase_path")
-      s.gsub!(/^    compiler_prefix = /, "#    compiler_prefix = ")
-      s.gsub!(/^      compiler_prefix = /, "#      compiler_prefix = ")
+      s.gsub!(/^\s+prefix = rebase_path/, "#    prefix = rebase_path")
+      s.gsub!(/^\s+compiler_prefix = /, "#    compiler_prefix = ")
       s.gsub!(/_cc = "\$\{prefix\}clang"/, '_cc = "clang"')
       s.gsub!(/_cxx = "\$\{prefix\}clang\+\+"/, '_cxx = "clang++"')
       s.gsub!(/cc = compiler_prefix \+ _cc/, "cc = _cc")
