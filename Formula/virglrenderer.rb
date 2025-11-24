@@ -5,7 +5,7 @@ class Virglrenderer < Formula
   
   url "https://gitlab.freedesktop.org/virgl/virglrenderer.git",
       tag: "1.2.0",
-      revision: "3a66c1e9c348c7d80badc908e9a4de9ed398ce7b",
+      revision: "500b41d5c8638f9b80dd558f4044f3301c7457a4",
       using: :git
   sha256 "6fd0d7393c4594c8e3859dc37ce65d2bcdf89f2bcfbe5ec5b2e895ef3ca7e6a5"
   version "1.2.0"
@@ -22,7 +22,7 @@ class Virglrenderer < Formula
 
   patch :p1 do
     url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/master/Patches/virglrenderer-v05.diff"
-    sha256 "3f76066d3b5c9146108c6723b374497b79492dbbaf9936525e9dfb4fc7003d6c"
+    sha256 "162884ee0dd6453949432afea0e6e43ecb97a9ae15f74f4998ac5b989acd71ce"
   end
 
   def install
