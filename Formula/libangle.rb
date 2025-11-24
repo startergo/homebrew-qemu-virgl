@@ -1,14 +1,13 @@
 class Libangle < Formula
   desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS and Android"
   homepage "https://chromium.googlesource.com/angle/angle"
-  # Clone main branch, then checkout specific commit in install method
-  url "https://chromium.googlesource.com/angle/angle.git",
-      using: :git,
-      branch: "main"
+  # Use a dummy URL - actual ANGLE download happens in install method
+  url "https://github.com/startergo/homebrew-qemu-virgl/archive/refs/heads/master.tar.gz"
   version "2025.11.24"
   license "BSD-3-Clause"
   
-  # Specific commit to use (will be checked out in install method)
+  # ANGLE will be downloaded in install method to avoid Homebrew's slow git handling
+  @@angle_repo = "https://chromium.googlesource.com/angle/angle"
   @@angle_commit = "c2b0dc24cfaf2f266bb3f12c56c49d7b8f3b4a80"
 
   depends_on "startergo/qemu-virgl/gn" => :build
@@ -72,9 +71,11 @@ class Libangle < Formula
   end
   
   def install
-    ohai "Checking out specific ANGLE commit: #{@@angle_commit}..."
-    system "git", "fetch", "--depth", "1", "origin", @@angle_commit
-    system "git", "checkout", @@angle_commit
+    ohai "Downloading ANGLE source (this may take a few minutes)..."
+    # Download ANGLE using the same method as run-arm.sh
+    system "git", "init"
+    system "git", "fetch", @@angle_repo
+    system "git", "checkout", "FETCH_HEAD"
     
     ohai "Installing Chromium build dependencies..."
     
