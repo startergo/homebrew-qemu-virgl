@@ -7,6 +7,7 @@ class Libangle < Formula
   version "2025.11.24"
   license "BSD-3-Clause"
 
+  depends_on "startergo/qemu-virgl/gn" => :build
   depends_on "ninja" => :build
   depends_on "python@3.13" => :build
   depends_on "rapidjson"

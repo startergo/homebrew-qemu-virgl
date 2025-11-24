@@ -45,17 +45,9 @@ jobs:
 
       - name: Install gn and rapidjson for ANGLE build
         run: |
-          # Install rapidjson from Homebrew
+          # Install gn from our tap and rapidjson from Homebrew
+          brew install --build-from-source --formula startergo/qemu-virgl/gn
           brew install rapidjson
-          
-          # Build gn from source
-          git clone https://gn.googlesource.com/gn
-          cd gn
-          python3 build/gen.py
-          ninja -C out
-          sudo cp out/gn /usr/local/bin/
-          cd ..
-          rm -rf gn
 
       - name: Build dependencies
         run: |
