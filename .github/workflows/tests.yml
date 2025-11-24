@@ -53,8 +53,12 @@ jobs:
           brew install rapidjson
 
       - name: Build dependencies
+        env:
+          GIT_TRACE: 1
+          GIT_CURL_VERBOSE: 1
+          HOMEBREW_VERBOSE: 1
         run: |
-          brew install --build-from-source --formula startergo/qemu-virgl/libangle
+          brew install --build-from-source --formula startergo/qemu-virgl/libangle --verbose
           brew install --build-from-source --formula startergo/qemu-virgl/libepoxy-angle
           brew install --build-from-source --formula startergo/qemu-virgl/virglrenderer
 
