@@ -9,8 +9,6 @@ on:
       - 'Patches/**'
       - '.github/workflows/*.yml'
   workflow_dispatch:
-    branches:
-      - testing
 
 jobs:
   publish:
