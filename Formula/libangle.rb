@@ -145,6 +145,14 @@ class Libangle < Formula
     # Apply MacPorts-style patches (make them optional to support different ANGLE versions)
     ohai "Applying patches for system toolchain..."
     
+    # Fix duplicate use_cxx23 declaration (may exist in build/config/compiler/compiler.gni)
+    if File.exist?("build/config/compiler/compiler.gni")
+      compiler_gni = File.read("build/config/compiler/compiler.gni")
+      if compiler_gni.include?("use_cxx23 = false")
+        inreplace "build/config/compiler/compiler.gni", /^  use_cxx23 = false$/, ""
+      end
+    end
+    
     # Use system toolchain - check file content first
     toolchain_content = File.read("build/toolchain/apple/toolchain.gni")
     has_prefix = toolchain_content.include?("prefix = rebase_path")
