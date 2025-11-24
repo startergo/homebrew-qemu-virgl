@@ -21,8 +21,8 @@ class Virglrenderer < Formula
   depends_on "spice-protocol"
 
   patch :p1 do
-    url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/master/Patches/virglrenderer-v05.diff"
-    sha256 "162884ee0dd6453949432afea0e6e43ecb97a9ae15f74f4998ac5b989acd71ce"
+    url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/refs/heads/master/Patches/virglrenderer-v05.diff"
+    sha256 "3f76066d3b5c9146108c6723b374497b79492dbbaf9936525e9dfb4fc7003d6c"
   end
 
   def install
