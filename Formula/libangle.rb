@@ -1,9 +1,10 @@
 class Libangle < Formula
   desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS and Android"
   homepage "https://chromium.googlesource.com/angle/angle"
-  url "https://chromium.googlesource.com/angle/angle.git",
+  # Use GitHub mirror for faster/more reliable downloads in CI
+  url "https://github.com/google/angle.git",
       using: :git,
-      branch: "main",
+      revision: "c2b0dc24cfaf2f266bb3f12c56c49d7b8f3b4a80",
       shallow: true
   version "2025.11.24"
   license "BSD-3-Clause"
@@ -69,11 +70,15 @@ class Libangle < Formula
   end
   
   def install
+    ohai "Installing Chromium build dependencies..."
+    
     # Download and setup all Chromium dependencies
+    ohai "Staging chromium-build..."
     resource("chromium-build").stage do
       (buildpath/"build").install Dir["*"]
     end
 
+    ohai "Staging chromium-testing..."
     resource("chromium-testing").stage do
       (buildpath/"testing").install Dir["*"]
     end
@@ -112,7 +117,10 @@ class Libangle < Formula
       (buildpath/"third_party/astc-encoder/src").install Dir["*"]
     end
 
+    ohai "All resources staged successfully"
+    
     # Create gclient_args.gni
+    ohai "Creating gclient_args.gni..."
     (buildpath/"build/config/gclient_args.gni").write <<~EOS
       # Generated from DEPS
       checkout_angle_internal = false
@@ -174,8 +182,10 @@ class Libangle < Formula
       '#import("//build/rust/rust_static_library.gni")'
 
     # Remove sanitize_c_array_bounds block
+    ohai "Removing sanitize_c_array_bounds block..."
     inreplace "gni/angle.gni", /# See https:\/\/crbug.com\/386992829.*?^  \}/m, ""
 
+    ohai "Starting GN configuration..."
     # Configure and build with gn and ninja
     system "gn", "gen", "out/Release",
            "--args=mac_sdk_min=\"0\" " \
@@ -188,8 +198,10 @@ class Libangle < Formula
            "angle_enable_metal=false " \
            "angle_enable_vulkan=false"
 
+    ohai "Starting ninja build (this will take 10-20 minutes)..."
     system "ninja", "-C", "out/Release"
 
+    ohai "Installing libraries and headers..."
     # Install libraries and headers
     lib.install Dir["out/Release/*.dylib"]
     include.install Dir["include/*"]
