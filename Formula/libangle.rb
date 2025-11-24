@@ -3,7 +3,8 @@ class Libangle < Formula
   homepage "https://chromium.googlesource.com/angle/angle"
   url "https://chromium.googlesource.com/angle/angle.git",
       using: :git,
-      branch: "main"
+      branch: "main",
+      shallow: true
   version "2025.11.24"
   license "BSD-3-Clause"
 
