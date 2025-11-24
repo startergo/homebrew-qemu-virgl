@@ -49,25 +49,14 @@ jobs:
 
       - name: Build dependencies
         run: |
-          brew update
-          # Build dependencies one by one with explicit formula paths
-          FORMULAS=(
-            "Formula/libangle.rb"
-            "Formula/libepoxy-angle.rb"
-            "Formula/virglrenderer.rb"
-          )
-          
-          for formula in "${FORMULAS[@]}"; do
-            echo "Building $formula..."
-            HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 \
-            brew install --build-from-source --formula "./$formula" --verbose || exit 1
-          done
+          brew install --build-from-source --formula startergo/qemu-virgl/libangle --verbose
+          brew install --build-from-source --formula startergo/qemu-virgl/libepoxy-angle --verbose
+          brew install --build-from-source --formula startergo/qemu-virgl/virglrenderer --verbose
 
       - name: Build qemu-virgl
         continue-on-error: true
         run: |
-          HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 \
-          brew install --build-from-source --formula ./Formula/qemu-virgl.rb --verbose || exit 1
+          brew install --build-from-source --formula startergo/qemu-virgl/qemu-virgl --verbose
 
       - name: Test installation
         continue-on-error: true

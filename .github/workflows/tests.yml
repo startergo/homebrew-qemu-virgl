@@ -46,16 +46,19 @@ jobs:
           mkdir -p $(brew --prefix)/Homebrew/Library/Taps/startergo
           ln -s ${{ github.workspace }} $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
 
+      - name: Install gn and rapidjson for ANGLE build
+        run: |
+          brew install gn rapidjson
+
       - name: Build dependencies
         run: |
-          brew install --HEAD --build-from-source --formula ./Formula/libangle.rb
-          brew install --HEAD --build-from-source --formula ./Formula/libepoxy-angle.rb
-          brew install --HEAD --build-from-source --formula ./Formula/virglrenderer.rb
+          brew install --build-from-source --formula startergo/qemu-virgl/libangle
+          brew install --build-from-source --formula startergo/qemu-virgl/libepoxy-angle
+          brew install --build-from-source --formula startergo/qemu-virgl/virglrenderer
 
       - name: Build and test qemu-virgl
         run: |
-          HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 \
-          brew install --build-from-source --formula ./Formula/qemu-virgl.rb --verbose || exit 1
+          brew install --build-from-source --formula startergo/qemu-virgl/qemu-virgl --verbose
 
       - name: Test QEMU functionality
         run: |
