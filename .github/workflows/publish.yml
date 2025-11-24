@@ -8,10 +8,13 @@ on:
       - 'Formula/**'
       - 'Patches/**'
       - '.github/workflows/*.yml'
+  workflow_dispatch:
+    branches:
+      - testing
 
 jobs:
   publish:
-    runs-on: macos-14
+    runs-on: macos-latest
     env:
       HOMEBREW_NO_AUTO_UPDATE: 1
       HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -42,7 +45,11 @@ jobs:
           restore-keys: |
             brew-publish-${{ runner.os }}-
 
-      - name: Build HEAD dependencies
+      - name: Install gn and rapidjson for ANGLE build
+        run: |
+          brew install gn rapidjson
+
+      - name: Build dependencies
         run: |
           brew update
           # Build dependencies one by one with explicit formula paths
@@ -55,7 +62,7 @@ jobs:
           for formula in "${FORMULAS[@]}"; do
             echo "Building $formula..."
             HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 \
-            brew install --HEAD --build-from-source --formula "./$formula" --verbose || exit 1
+            brew install --build-from-source --formula "./$formula" --verbose || exit 1
           done
 
       - name: Build qemu-virgl
