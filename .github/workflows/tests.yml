@@ -67,6 +67,9 @@ jobs:
         if: ${{ github.event.inputs.use_bottles == 'true' }}
         run: |
           echo "Installing pre-built bottles..."
+          brew update
+          brew untap startergo/qemu-virgl || true
+          brew tap startergo/qemu-virgl
           brew install startergo/qemu-virgl/qemu-virgl
 
       - name: Test QEMU functionality
