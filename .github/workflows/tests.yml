@@ -10,6 +10,12 @@ on:
       - '.github/workflows/*.yml'
   pull_request:
   workflow_dispatch:
+    inputs:
+      use_bottles:
+        description: 'Use pre-built bottles instead of building from source'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   test:
@@ -35,12 +41,14 @@ jobs:
           ln -s ${{ github.workspace }} $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
 
       - name: Install gn and rapidjson for ANGLE build
+        if: ${{ github.event.inputs.use_bottles != 'true' }}
         run: |
           # Install gn from our tap and rapidjson from Homebrew
           brew install --build-from-source --formula startergo/qemu-virgl/gn
           brew install rapidjson
 
-      - name: Build dependencies
+      - name: Build dependencies from source
+        if: ${{ github.event.inputs.use_bottles != 'true' }}
         env:
           GIT_TRACE: 1
           GIT_CURL_VERBOSE: 1
@@ -50,9 +58,16 @@ jobs:
           brew install --build-from-source --formula startergo/qemu-virgl/libepoxy-angle
           brew install --build-from-source --formula startergo/qemu-virgl/virglrenderer
 
-      - name: Build and test qemu-virgl
+      - name: Build qemu-virgl from source
+        if: ${{ github.event.inputs.use_bottles != 'true' }}
         run: |
           brew install --build-from-source --formula startergo/qemu-virgl/qemu-virgl --verbose
+
+      - name: Install from bottles
+        if: ${{ github.event.inputs.use_bottles == 'true' }}
+        run: |
+          echo "Installing pre-built bottles..."
+          brew install startergo/qemu-virgl/qemu-virgl
 
       - name: Test QEMU functionality
         run: |
