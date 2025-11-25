@@ -13,6 +13,11 @@ class QemuVirgl < Formula
   version "10.1.2"
   license "GPL-2.0-only"
 
+  bottle do
+    root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20251125.173010"
+    sha256 cellar: :any, arm64_sequoia: "d3d1d0974a361c968bf2903d49345d45ab93caaf296bad365195a98b25a8a1b4"
+  end
+
   livecheck do
     url "https://www.qemu.org/download/"
     regex(/href=.*?qemu[._-]v?(\d+(?:\.\d+)+)\.t/i)
