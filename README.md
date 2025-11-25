@@ -39,21 +39,15 @@ If you haven't installed Homebrew yet:
 1. Add the tap and install QEMU with GPU acceleration:
 ```sh
 brew tap startergo/qemu-virgl
-brew install startergo/qemu-virgl/libangle
-brew install startergo/qemu-virgl/libepoxy-angle
-brew install startergo/qemu-virgl/virglrenderer
 brew install startergo/qemu-virgl/qemu-virgl
 ```
-
-> ℹ️ **Note**: You can install everything at once using `brew install startergo/qemu-virgl/qemu-virgl`,
-> but installing components separately as shown above can help isolate any potential issues.
 
 The formula will automatically install all required dependencies including:
 - libangle (Apple's Metal backend for OpenGL)
 - libepoxy-angle (OpenGL dispatch library)
 - virglrenderer (OpenGL virtualization library)
 
-Note: The first installation might take some time (15-30 minutes) as it builds several components. Subsequent updates will be faster as they use pre-built bottles.
+> ℹ️ **Note**: Pre-built bottles are available for faster installation. If bottles are not available for your macOS version, Homebrew will build from source (15-30 minutes).
 
 ### Verifying Installation
 
