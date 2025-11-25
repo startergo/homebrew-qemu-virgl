@@ -8,10 +8,11 @@ on:
       - 'Formula/**'
       - 'Patches/**'
       - '.github/workflows/*.yml'
+  workflow_dispatch:
 
 jobs:
   publish:
-    runs-on: macos-14
+    runs-on: macos-latest
     env:
       HOMEBREW_NO_AUTO_UPDATE: 1
       HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -42,33 +43,56 @@ jobs:
           restore-keys: |
             brew-publish-${{ runner.os }}-
 
-      - name: Build HEAD dependencies
+      - name: Install gn and rapidjson for ANGLE build
         run: |
-          brew update
-          # Build dependencies one by one with explicit formula paths
-          FORMULAS=(
-            "Formula/libangle.rb"
-            "Formula/libepoxy-angle.rb"
-            "Formula/virglrenderer.rb"
-          )
-          
-          for formula in "${FORMULAS[@]}"; do
-            echo "Building $formula..."
-            HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 \
-            brew install --HEAD --build-from-source --formula "./$formula" --verbose || exit 1
-          done
+          # Install gn from our tap and rapidjson from Homebrew
+          brew install --build-from-source --formula startergo/qemu-virgl/gn
+          brew install rapidjson
+
+      - name: Build dependencies
+        run: |
+          brew install --build-from-source --formula startergo/qemu-virgl/libangle --verbose
+          brew install --build-from-source --formula startergo/qemu-virgl/libepoxy-angle --verbose
+          brew install --build-from-source --formula startergo/qemu-virgl/virglrenderer --verbose
 
       - name: Build qemu-virgl
-        continue-on-error: true
         run: |
-          HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 \
-          brew install --build-from-source --formula ./Formula/qemu-virgl.rb --verbose || exit 1
+          brew install --build-from-source --formula startergo/qemu-virgl/qemu-virgl --verbose
 
       - name: Test installation
-        continue-on-error: true
         run: |
           qemu-system-x86_64 --version
           qemu-img --version
+
+      - name: Create bottles
+        run: |
+          mkdir -p bottles
+          brew bottle --no-rebuild --json startergo/qemu-virgl/libangle
+          brew bottle --no-rebuild --json startergo/qemu-virgl/libepoxy-angle
+          brew bottle --no-rebuild --json startergo/qemu-virgl/virglrenderer
+          brew bottle --no-rebuild --json startergo/qemu-virgl/qemu-virgl
+          mv *.bottle.* bottles/
+          mv *.json bottles/
+
+      - name: Upload bottles as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bottles
+          path: bottles/
+
+      - name: Create release and upload bottles
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(date +%Y%m%d.%H%M%S)
+          TAG="v${VERSION}"
+          
+          # Create release
+          gh release create "$TAG" \
+            --title "Bottles $VERSION" \
+            --notes "Pre-built bottles for macOS $(sw_vers -productVersion) ($(uname -m))" \
+            bottles/*.bottle.tar.gz
 
       - name: Upload logs on failure
         if: failure()

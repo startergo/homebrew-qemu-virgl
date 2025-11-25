@@ -5,10 +5,12 @@ end
 class QemuVirgl < Formula
   desc "Emulator for x86 and PowerPC with VirGL acceleration support"
   homepage "https://www.qemu.org/"
-  url "https://github.com/qemu/qemu.git", 
-      revision: "9027aa63959c0a6cdfe53b2a610aaec98764a2da",
+  url "https://gitlab.com/qemu-project/qemu.git", 
+      tag: "v10.1.2",
+      revision: "ccaea6b2656ec6eab966585f7b16438208f98de7",
       using: NoSubmoduleGitDownloadStrategy
-  version "9.2.3"
+  sha256 "72f41f3708496b45186ca6b6d13982044b04848ecda4aef3f6211699eb4ea1b6"
+  version "10.1.2"
   license "GPL-2.0-only"
 
   livecheck do
@@ -52,8 +54,8 @@ class QemuVirgl < Formula
   end
 
   patch :p1 do
-    url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/master/Patches/qemu-v06.diff"
-    sha256 "61e9138e102a778099b96fb00cffce2ba65040c1f97f2316da3e7ef2d652034b"
+    url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/refs/heads/master/Patches/qemu-v07.diff"
+    sha256 "d0da295f24ece630f82e685ffa571ce02f11d31f8311942bc0b50d1430f3323a"
   end
 
   def install
