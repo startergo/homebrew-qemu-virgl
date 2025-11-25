@@ -95,6 +95,19 @@ jobs:
           brew bottle --no-rebuild startergo/qemu-virgl/libepoxy-angle
           brew bottle --no-rebuild startergo/qemu-virgl/virglrenderer
           brew bottle --no-rebuild startergo/qemu-virgl/qemu-virgl
+          
+          # Rename bottles from double-dash to single-dash format for Homebrew compatibility
+          for file in *.bottle.tar.gz; do
+            if [ -f "$file" ]; then
+              # Replace first -- with single - in filename
+              newname=$(echo "$file" | sed 's/--/-/')
+              if [ "$file" != "$newname" ]; then
+                echo "Renaming: $file -> $newname"
+                mv "$file" "$newname"
+              fi
+            fi
+          done
+          
           mv *.bottle.tar.gz bottles/ 2>/dev/null || true
 
       - name: Upload bottles as artifacts
