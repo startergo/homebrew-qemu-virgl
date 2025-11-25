@@ -64,6 +64,30 @@ jobs:
           qemu-system-x86_64 --version
           qemu-img --version
 
+      - name: Verify OpenGL/ANGLE library linking
+        run: |
+          echo "=== Checking QEMU library dependencies ==="
+          otool -L $(brew --prefix)/bin/qemu-system-aarch64 | grep -E "(libangle|libepoxy|virgl|spice)" || echo "⚠️  No OpenGL libraries found in dependencies"
+          
+          echo -e "\n=== Checking rpaths in QEMU binary ==="
+          otool -l $(brew --prefix)/bin/qemu-system-aarch64 | grep -A2 LC_RPATH | grep path || echo "⚠️  No rpaths found"
+          
+          echo -e "\n=== Verifying ANGLE libraries exist ==="
+          ls -lh $(brew --prefix)/opt/libangle/lib/libGLESv2.dylib
+          ls -lh $(brew --prefix)/opt/libangle/lib/libEGL.dylib
+          
+          echo -e "\n=== Verifying libepoxy-angle exists ==="
+          ls -lh $(brew --prefix)/opt/libepoxy-angle/lib/libepoxy.0.dylib
+          
+          echo -e "\n=== Verifying virglrenderer exists ==="
+          ls -lh $(brew --prefix)/opt/virglrenderer/lib/libvirglrenderer.1.dylib
+          
+          echo -e "\n=== Checking QEMU build configuration ==="
+          qemu-system-aarch64 -display help 2>&1 | grep -E "(cocoa|sdl)" || echo "⚠️  Display backends not found"
+          
+          echo -e "\n=== Checking QEMU device support ==="
+          qemu-system-aarch64 -device help 2>&1 | grep virtio-gpu || echo "⚠️  virtio-gpu devices not found"
+
       - name: Create bottles
         run: |
           mkdir -p bottles
