@@ -12,11 +12,7 @@ class Virglrenderer < Formula
   license "MIT"
 
   bottle do
-    root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20251125.173010",
-             files: {
-               arm64_sequoia: "virglrenderer--1.2.0.arm64_sequoia.bottle.tar.gz"
-             }
-    sha256 cellar: :any, arm64_sequoia: "ef273ba138ae916ada44b1be440cdab1439b32a6e2a4db641e5250b23f08cc7c"
+    sha256 cellar: :any, arm64_sequoia: "ef273ba138ae916ada44b1be440cdab1439b32a6e2a4db641e5250b23f08cc7c", url: "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20251125.173010/virglrenderer--1.2.0.arm64_sequoia.bottle.tar.gz"
   end
 
   depends_on "meson" => :build
