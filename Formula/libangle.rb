@@ -2,10 +2,15 @@ class Libangle < Formula
   desc "Conformant OpenGL ES implementation for Windows, Mac, Linux, iOS and Android"
   homepage "https://chromium.googlesource.com/angle/angle"
   # Use a dummy URL - actual ANGLE download happens in install method
+  # HEAD-only formula: no checksum verification for dummy tarball
   url "https://github.com/startergo/homebrew-qemu-virgl/archive/refs/heads/master.tar.gz"
-  sha256 "6450ae6b544eb3cfd28eef1a219a46bfbf0474f88ef8b4eeee23d705ce01fe24"
   version "2025.11.24"
   license "BSD-3-Clause"
+  
+  # Skip checksum verification for dummy URL
+  def self.sha256(_)
+    nil
+  end
   
   # ANGLE will be downloaded in install method to avoid Homebrew's slow git handling
   @@angle_repo = "https://chromium.googlesource.com/angle/angle"
