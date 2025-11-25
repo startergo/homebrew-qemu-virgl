@@ -14,8 +14,8 @@ class QemuVirgl < Formula
   license "GPL-2.0-only"
 
   bottle do
-    root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20251125.173010"
-    sha256 arm64_sequoia: "d3d1d0974a361c968bf2903d49345d45ab93caaf296bad365195a98b25a8a1b4"
+    root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20251125.201155"
+    sha256 arm64_sequoia: "1dd6b04f7b195c829c1f108cd2a21cbd0f25ad8a2cd3e1d35368c169bcdecc1a"
   end
 
   livecheck do
