@@ -46,18 +46,18 @@ jobs:
       - name: Install gn and rapidjson for ANGLE build
         run: |
           # Install gn from our tap and rapidjson from Homebrew
-          brew install --build-from-source --build-bottle --formula startergo/qemu-virgl/gn
+          brew install --build-bottle --formula startergo/qemu-virgl/gn
           brew install rapidjson
 
       - name: Build dependencies
         run: |
-          brew install --build-from-source --build-bottle --formula startergo/qemu-virgl/libangle --verbose
-          brew install --build-from-source --build-bottle --formula startergo/qemu-virgl/libepoxy-angle --verbose
-          brew install --build-from-source --build-bottle --formula startergo/qemu-virgl/virglrenderer --verbose
+          brew install --build-bottle --formula startergo/qemu-virgl/libangle --verbose
+          brew install --build-bottle --formula startergo/qemu-virgl/libepoxy-angle --verbose
+          brew install --build-bottle --formula startergo/qemu-virgl/virglrenderer --verbose
 
       - name: Build qemu-virgl
         run: |
-          brew install --build-from-source --build-bottle --formula startergo/qemu-virgl/qemu-virgl --verbose
+          brew install --build-bottle --formula startergo/qemu-virgl/qemu-virgl --verbose
 
       - name: Test installation
         run: |
