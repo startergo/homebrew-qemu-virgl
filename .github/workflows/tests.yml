@@ -29,18 +29,6 @@ jobs:
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
 
-      - name: Update Formula
-        run: |
-          CURRENT_UTC="2025-03-13 17:36:21"
-          CURRENT_USER="startergo"
-          
-          sed -i.bak \
-            -e "1s/.*$/# Formula created by ${CURRENT_USER} on version ${CURRENT_UTC} UTC/" \
-            -e 's|revision: ".*"|revision: "99fc08366b06282614daeda989d2fde6ab8a707f"|' \
-            -e '/patch :p1/,/end/ s|url ".*"|url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/refs/heads/master/Patches/qemu-v05.diff"|' \
-            -e '/patch :p1/,/end/ s|sha256 ".*"|sha256 "6d27699ba454b5ecb7411822a745b89dce3dea5fccabfb56c84ad698f3222dd4"|' \
-            Formula/qemu-virgl.rb
-
       - name: Set up tap
         run: |
           mkdir -p $(brew --prefix)/Homebrew/Library/Taps/startergo
