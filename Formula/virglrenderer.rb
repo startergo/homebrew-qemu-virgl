@@ -31,10 +31,18 @@ class Virglrenderer < Formula
   end
 
   def install
-    # Install Python dependencies
+    # Install Python dependencies in a venv
     python3 = Formula["python@3.13"].opt_bin/"python3.13"
-    system python3, "-m", "pip", "install", "--prefix=#{buildpath}/vendor", resource("pyyaml")
-    ENV.prepend_path "PYTHONPATH", "#{buildpath}/vendor/lib/python3.13/site-packages"
+    venv_path = buildpath/"venv"
+    system python3, "-m", "venv", venv_path
+    venv_python = venv_path/"bin/python"
+    
+    resource("pyyaml").stage do
+      system venv_python, "-m", "pip", "install", "."
+    end
+    
+    ENV["PYTHON"] = venv_python
+    ENV.prepend_path "PYTHONPATH", venv_path/"lib/python3.13/site-packages"
     
     # Use absolute paths to be absolutely certain
     epoxy = Formula["startergo/qemu-virgl/libepoxy-angle"]
