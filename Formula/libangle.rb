@@ -3,7 +3,7 @@ class Libangle < Formula
   homepage "https://chromium.googlesource.com/angle/angle"
   # Use a dummy URL - actual ANGLE download happens in install method
   url "https://github.com/startergo/homebrew-qemu-virgl/archive/refs/heads/master.tar.gz"
-  sha256 "29483cbe4eae8ccf4376115a5a873d680d5326128c8755432d6f076155427756"
+  sha256 "0a20524d118909243c76bdab1030380283b1f6f3dd5d262e6fc307b5e573bae4"
   version "2025.11.24"
   license "BSD-3-Clause"
   
