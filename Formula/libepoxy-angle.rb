@@ -9,6 +9,7 @@ class LibepoxyAngle < Formula
 
   bottle do
     root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20251125.173010"
+    rebuild 0
     sha256 cellar: :any, arm64_sequoia: "1be6d574ceb71b00004c0f976d1537908b0ffeb53f4e70b66a4d807b112562a6"
   end
 

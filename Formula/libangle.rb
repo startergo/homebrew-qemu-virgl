@@ -9,6 +9,7 @@ class Libangle < Formula
 
   bottle do
     root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20251125.173010"
+    rebuild 0
     sha256 cellar: :any, arm64_sequoia: "ccc3cd49bb3a3233bd8afffc308c829296b4b7cc73268cabbf9667b8b5681904"
   end
   

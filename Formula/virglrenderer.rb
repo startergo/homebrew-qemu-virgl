@@ -13,6 +13,7 @@ class Virglrenderer < Formula
 
   bottle do
     root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20251125.173010"
+    rebuild 0
     sha256 cellar: :any, arm64_sequoia: "ef273ba138ae916ada44b1be440cdab1439b32a6e2a4db641e5250b23f08cc7c"
   end
 
