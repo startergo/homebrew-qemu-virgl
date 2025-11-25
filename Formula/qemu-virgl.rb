@@ -124,26 +124,65 @@ class QemuVirgl < Formula
     system "make", "V=1"
     system "make", "install"
     
-    # Create helper script for running QEMU with correct library paths
-    (bin/"qemu-virgl").write <<~EOS
-      #!/bin/bash
-      export DYLD_FALLBACK_LIBRARY_PATH="#{angle_prefix}/lib:#{epoxy_prefix}/lib:#{virgl_prefix}/lib:#{spice_prefix}/lib:$DYLD_FALLBACK_LIBRARY_PATH"
-      export ANGLE_DEFAULT_PLATFORM="metal"
+    # Use install_name_tool to embed library paths in QEMU binaries
+    # This allows direct execution without wrapper scripts or environment variables
+    
+    # Get all installed binaries and libraries
+    qemu_binaries = Dir["#{bin}/qemu-*"]
+    qemu_libs = Dir["#{lib}/*.dylib"]
+    
+    # Fix library paths in all QEMU binaries
+    qemu_binaries.each do |binary|
+      next unless File.executable?(binary) && !File.symlink?(binary)
       
-      # Uncomment for debugging
-      # export VIRGL_DEBUG=all
-      # export MESA_DEBUG=1
+      # Add rpath for our custom libraries
+      system "install_name_tool", "-add_rpath", "#{angle_prefix}/lib", binary rescue nil
+      system "install_name_tool", "-add_rpath", "#{epoxy_prefix}/lib", binary rescue nil
+      system "install_name_tool", "-add_rpath", "#{virgl_prefix}/lib", binary rescue nil
+      system "install_name_tool", "-add_rpath", "#{spice_prefix}/lib", binary rescue nil
       
-      exec "#{bin}/qemu-system-x86_64" "$@"
-    EOS
-    chmod 0755, bin/"qemu-virgl"
+      # Fix references to custom libraries
+      ["libEGL.dylib", "libGLESv2.dylib"].each do |lib|
+        system "install_name_tool", "-change", 
+               "#{angle_prefix}/lib/#{lib}",
+               "@rpath/#{lib}",
+               binary rescue nil
+      end
+      
+      ["libepoxy.0.dylib"].each do |lib|
+        system "install_name_tool", "-change",
+               "#{epoxy_prefix}/lib/#{lib}",
+               "@rpath/#{lib}",
+               binary rescue nil
+      end
+      
+      ["libvirglrenderer.1.dylib"].each do |lib|
+        system "install_name_tool", "-change",
+               "#{virgl_prefix}/lib/#{lib}",
+               "@rpath/#{lib}",
+               binary rescue nil
+      end
+    end
+    
+    # Also fix QEMU's own libraries if they exist
+    qemu_libs.each do |lib|
+      system "install_name_tool", "-add_rpath", "#{angle_prefix}/lib", lib rescue nil
+      system "install_name_tool", "-add_rpath", "#{epoxy_prefix}/lib", lib rescue nil
+      system "install_name_tool", "-add_rpath", "#{virgl_prefix}/lib", lib rescue nil
+    end
   end
 
   def caveats
     <<~EOS
-      To run QEMU with VirGL acceleration, use:
-        qemu-virgl -machine q35,accel=hvf -cpu host -m 4G \\
-          -device virtio-gpu-pci,virgl=on -display cocoa,gl=on [other options]
+      QEMU has been built with VirGL/ANGLE GPU acceleration support.
+      
+      To run with OpenGL acceleration, use:
+        qemu-system-x86_64 -machine q35,accel=hvf -cpu host -m 4G \\
+          -device virtio-gpu-gl-pci -display cocoa,gl=es [other options]
+          
+      For Apple Silicon Macs, use:
+        qemu-system-aarch64 -machine virt,accel=hvf -cpu cortex-a72 -m 4G \\
+          -device virtio-gpu-gl-pci -display cocoa,gl=es [other options]
           
       For detailed usage examples, see:
       https://github.com/startergo/homebrew-qemu-virgl
@@ -162,7 +201,8 @@ class QemuVirgl < Formula
     resource("test-image").stage testpath
     assert_match "file format: raw", shell_output("#{bin}/qemu-img info FLOPPY.img")
 
-    # Test VirGL helper script
-    system "#{bin}/qemu-virgl", "-accel", "help"
+    # Test that binaries can find libraries (check for missing library errors)
+    system "#{bin}/qemu-system-x86_64", "-accel", "help"
+    system "#{bin}/qemu-system-aarch64", "-accel", "help"
   end
 end

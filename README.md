@@ -99,20 +99,9 @@ cp $(dirname $(which qemu-img))/../share/qemu/edk2-aarch64-code.fd .
 cp $(dirname $(which qemu-img))/../share/qemu/edk2-arm-vars.fd .
 ```
 
-First, create a helper script to handle environment variables correctly:
-
-```sh
-cat > run-qemu.sh <<EOF
-#!/bin/bash
-exec sudo DYLD_FALLBACK_LIBRARY_PATH="/opt/homebrew/opt/libangle/lib:\$DYLD_FALLBACK_LIBRARY_PATH" \\
-qemu-system-aarch64 "\$@"
-EOF
-chmod +x run-qemu.sh
-```
-
 #### Verify that OpenGL acceleration is working
 ```
-./run-qemu.sh \
+sudo qemu-system-aarch64 \
   -machine virt,accel=hvf \
   -cpu cortex-a72 -smp 2 -m 1G \
   -device virtio-gpu-gl-pci \
@@ -126,7 +115,7 @@ When the QEMU monitor appears (shown by the (qemu) prompt), type `info qtree`. T
 Install the system from the ISO image:
 
 ```sh
-./run-qemu.sh \
+sudo qemu-system-aarch64 \
   -machine virt,accel=hvf \
   -cpu cortex-a72 -smp 2 -m 4G \
   -device intel-hda -device hda-output \
@@ -170,7 +159,7 @@ This command will start a QEMU virtual machine with the following options:
 
 Run the system without the CD image to boot into the primary partition:
 ```sh
-./run-qemu.sh \
+sudo qemu-system-aarch64 \
   -machine virt,accel=hvf \
   -cpu cortex-a72 -smp 2 -m 4G \
   -device intel-hda -device hda-output \
@@ -208,19 +197,10 @@ Copy the firmware:
 cp $(dirname $(which qemu-img))/../share/qemu/edk2-x86_64-code.fd .
 cp $(dirname $(which qemu-img))/../share/qemu/edk2-vars.fd .
 ```
-First, create a helper script to handle environment variables correctly:
 
-```sh
-cat > run-qemu-x86.sh <<EOF
-#!/bin/bash
-exec sudo DYLD_FALLBACK_LIBRARY_PATH="/usr/local/opt/libangle/lib:\$DYLD_FALLBACK_LIBRARY_PATH" \\
-qemu-system-x86_64 "\$@"
-EOF
-chmod +x run-qemu-x86.sh
-```
 Install the system from the ISO image:
 ```sh
-./run-qemu-x86.sh \
+sudo qemu-system-x86_64 \
   -M q35 \
   -cpu host \
   -smp 4 \
@@ -284,7 +264,10 @@ If you encounter installation issues:
 ### Common Issues
 
 1. **Missing libEGL.dylib error**:
-   If you see: "Couldn't open libEGL.dylib", your environment variables aren't correctly passed to QEMU. Make sure you're using the script method above that correctly sets `DYLD_FALLBACK_LIBRARY_PATH`.
+   If you see: "Couldn't open libEGL.dylib", this indicates a problem with library linking. Try reinstalling:
+   ```sh
+   brew reinstall startergo/qemu-virgl/qemu-virgl
+   ```
 
 2. **Network Issues**:
    - If running with vmnet-shared fails, make sure your user has proper permissions
