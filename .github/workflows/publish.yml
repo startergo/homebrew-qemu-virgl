@@ -139,3 +139,8 @@ jobs:
             ~/Library/Logs/Homebrew/*.log
             ~/Library/Logs/Homebrew/*/*.log
             ~/Library/Caches/Homebrew/Logs/*.log
+      
+      - name: Cleanup tap symlink
+        if: always()
+        run: |
+          rm -f $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl || true

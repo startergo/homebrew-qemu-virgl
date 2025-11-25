@@ -67,9 +67,6 @@ jobs:
         if: ${{ github.event.inputs.use_bottles == 'true' }}
         run: |
           echo "Installing pre-built bottles..."
-          brew update
-          brew untap startergo/qemu-virgl || true
-          brew tap startergo/qemu-virgl
           brew install startergo/qemu-virgl/qemu-virgl
 
       - name: Test QEMU functionality
@@ -121,3 +118,8 @@ jobs:
             ~/Library/Logs/Homebrew/*.log
             ~/Library/Logs/Homebrew/*/*.log
             ~/Library/Caches/Homebrew/Logs/*.log
+      
+      - name: Cleanup tap symlink
+        if: always()
+        run: |
+          rm -f $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl || true
