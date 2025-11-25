@@ -7,7 +7,7 @@ class QemuVirgl < Formula
   homepage "https://www.qemu.org/"
   url "https://gitlab.com/qemu-project/qemu.git", 
       tag: "v10.1.2",
-      revision: "be7ecba5cc5018e7c5bd17784d3068ebfe57e967",
+      revision: "ccaea6b2656ec6eab966585f7b16438208f98de7",
       using: NoSubmoduleGitDownloadStrategy
   sha256 "72f41f3708496b45186ca6b6d13982044b04848ecda4aef3f6211699eb4ea1b6"
   version "10.1.2"
