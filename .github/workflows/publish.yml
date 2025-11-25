@@ -67,12 +67,11 @@ jobs:
       - name: Create bottles
         run: |
           mkdir -p bottles
-          brew bottle --no-rebuild --json startergo/qemu-virgl/libangle
-          brew bottle --no-rebuild --json startergo/qemu-virgl/libepoxy-angle
-          brew bottle --no-rebuild --json startergo/qemu-virgl/virglrenderer
-          brew bottle --no-rebuild --json startergo/qemu-virgl/qemu-virgl
-          mv *.bottle.* bottles/
-          mv *.json bottles/
+          brew bottle --no-rebuild startergo/qemu-virgl/libangle
+          brew bottle --no-rebuild startergo/qemu-virgl/libepoxy-angle
+          brew bottle --no-rebuild startergo/qemu-virgl/virglrenderer
+          brew bottle --no-rebuild startergo/qemu-virgl/qemu-virgl
+          mv *.bottle.tar.gz bottles/ 2>/dev/null || true
 
       - name: Upload bottles as artifacts
         uses: actions/upload-artifact@v4
