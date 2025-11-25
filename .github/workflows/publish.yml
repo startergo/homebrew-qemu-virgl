@@ -12,7 +12,14 @@ on:
 
 jobs:
   publish:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            arch: arm64
+          - os: macos-15-intel
+            arch: x86_64
+    runs-on: ${{ matrix.os }}
     env:
       HOMEBREW_NO_AUTO_UPDATE: 1
       HOMEBREW_NO_INSTALL_CLEANUP: 1
@@ -113,11 +120,22 @@ jobs:
       - name: Upload bottles as artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: bottles
+          name: bottles-${{ matrix.arch }}
           path: bottles/
 
+  release:
+    needs: publish
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-latest
+    steps:
+      - name: Download all bottle artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-bottles
+          pattern: bottles-*
+          merge-multiple: true
+
       - name: Create release and upload bottles
-        if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -126,9 +144,10 @@ jobs:
           
           # Create release
           gh release create "$TAG" \
+            --repo ${{ github.repository }} \
             --title "Bottles $VERSION" \
-            --notes "Pre-built bottles for macOS $(sw_vers -productVersion) ($(uname -m))" \
-            bottles/*.bottle.tar.gz
+            --notes "Pre-built bottles for macOS (arm64 + x86_64)" \
+            all-bottles/*.bottle.tar.gz
 
       - name: Upload logs on failure
         if: failure()
