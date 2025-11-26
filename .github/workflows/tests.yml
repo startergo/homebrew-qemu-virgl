@@ -37,11 +37,8 @@ jobs:
 
       - name: Set up tap
         run: |
-          # Remove any existing tap directory
-          rm -rf $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
-          # Copy the repository to the tap location (not symlink, as Homebrew validates taps)
-          mkdir -p $(brew --prefix)/Homebrew/Library/Taps/startergo
-          cp -R ${{ github.workspace }} $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
+          # Tap the repository using file:// URL to use local checkout
+          brew tap startergo/qemu-virgl file://${{ github.workspace }}
           # Verify tap is set up correctly
           brew tap-info startergo/qemu-virgl
 
