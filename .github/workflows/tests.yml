@@ -40,12 +40,8 @@ jobs:
 
       - name: Set up tap
         run: |
-          # Create tap directory and copy files
-          # This avoids the Homebrew action's symlink cleanup
-          TAP_DIR="$(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl"
-          mkdir -p "$(dirname "$TAP_DIR")"
-          rm -rf "$TAP_DIR"
-          cp -R ${{ github.workspace }} "$TAP_DIR"
+          mkdir -p $(brew --prefix)/Homebrew/Library/Taps/startergo
+          ln -s ${{ github.workspace }} $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
 
       - name: Install gn and rapidjson for ANGLE build
         if: ${{ github.event.inputs.use_bottles != 'true' }}
@@ -125,4 +121,18 @@ jobs:
             ~/Library/Logs/Homebrew/*.log
             ~/Library/Logs/Homebrew/*/*.log
             ~/Library/Caches/Homebrew/Logs/*.log
+      
+      - name: Cleanup tap symlink before post-action
+        if: always()
+        run: |
+          # Remove symlink manually to prevent Homebrew action's post-cleanup from failing
+          TAP_PATH="$(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl"
+          if [ -L "$TAP_PATH" ]; then
+            rm -f "$TAP_PATH"
+          fi
+          # Remove parent directory if empty
+          PARENT_DIR="$(brew --prefix)/Homebrew/Library/Taps/startergo"
+          if [ -d "$PARENT_DIR" ] && [ -z "$(ls -A "$PARENT_DIR")" ]; then
+            rmdir "$PARENT_DIR"
+          fi
       
