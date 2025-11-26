@@ -162,4 +162,7 @@ jobs:
       - name: Cleanup tap symlink
         if: always()
         run: |
-          rm -f $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl || true
+          TAP_PATH="$(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl"
+          if [ -L "$TAP_PATH" ]; then
+            rm -f "$TAP_PATH"
+          fi
