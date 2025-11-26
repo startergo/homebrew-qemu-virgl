@@ -1,0 +1,335 @@
+--- qemu-10.1.2/include/ui/sdl2.h	2025-10-20 15:44:00
++++ qemu-10.1.2-patched/include/ui/sdl2.h	2025-11-26 09:07:45
+@@ -21,6 +21,9 @@
+ # include <SDL_image.h>
+ #endif
+ 
++#ifdef CONFIG_SDL_CLIPBOARD
++#include "ui/clipboard.h"
++#endif
+ #include "ui/kbd-state.h"
+ #ifdef CONFIG_OPENGL
+ # include "ui/egl-helpers.h"
+@@ -45,6 +48,11 @@
+     bool gui_keysym;
+     SDL_GLContext winctx;
+     QKbdState *kbd;
++#ifdef CONFIG_SDL_CLIPBOARD
++    QemuClipboardPeer cbpeer;
++    bool clipboard_active;
++    uint32_t last_focus_time;
++#endif
+ #ifdef CONFIG_OPENGL
+     QemuGLShader *gls;
+     egl_fb guest_fb;
+@@ -97,4 +105,11 @@
+ void sdl2_gl_scanout_flush(DisplayChangeListener *dcl,
+                            uint32_t x, uint32_t y, uint32_t w, uint32_t h);
+ 
++#ifdef CONFIG_SDL_CLIPBOARD
++void sdl2_clipboard_init(struct sdl2_console *scon);
++void sdl2_clipboard_handle_focus_change(struct sdl2_console *scon,
++                                         bool gained_focus);
++void sdl2_clipboard_handle_request(struct sdl2_console *scon);
++#endif
++
+ #endif /* SDL2_H */
+--- qemu-10.1.2/meson.build	2025-10-20 15:44:00
++++ qemu-10.1.2-patched/meson.build	2025-11-26 09:07:45
+@@ -1627,6 +1627,12 @@
+   sdl_image = not_found
+ endif
+ 
++
++have_sdl_clipboard = false
++if sdl.found()
++  have_sdl_clipboard = get_option('sdl_clipboard').require(sdl.found()).allowed()
++endif
++
+ rbd = not_found
+ if not get_option('rbd').auto() or have_block
+   librados = cc.find_library('rados', required: get_option('rbd'))
+@@ -2549,6 +2555,7 @@
+ config_host_data.set('CONFIG_PLUGIN', get_option('plugins'))
+ config_host_data.set('CONFIG_RBD', rbd.found())
+ config_host_data.set('CONFIG_RDMA', rdma.found())
++config_host_data.set('CONFIG_SDL_CLIPBOARD', have_sdl_clipboard)
+ config_host_data.set('CONFIG_RELOCATABLE', get_option('relocatable'))
+ config_host_data.set('CONFIG_SAFESTACK', get_option('safe_stack'))
+ config_host_data.set('CONFIG_SDL', sdl.found())
+--- qemu-10.1.2/meson_options.txt	2025-10-20 15:44:00
++++ qemu-10.1.2-patched/meson_options.txt	2025-11-26 09:07:45
+@@ -212,6 +212,8 @@
+        description: 'SDL user interface')
+ option('sdl_image', type : 'feature', value : 'auto',
+        description: 'SDL Image support for icons')
++option('sdl_clipboard', type : 'feature', value : 'auto',
++       description: 'SDL clipboard support')
+ option('seccomp', type : 'feature', value : 'auto',
+        description: 'seccomp support')
+ option('smartcard', type : 'feature', value : 'auto',
+--- qemu-10.1.2/ui/meson.build	2025-10-20 15:44:01
++++ qemu-10.1.2-patched/ui/meson.build	2025-11-26 09:07:45
+@@ -123,6 +123,9 @@
+     'sdl2-input.c',
+     'sdl2.c',
+   ))
++  if have_sdl_clipboard
++    sdl_ss.add(files('sdl2-clipboard.c'))
++  endif
+   sdl_ss.add(when: opengl, if_true: files('sdl2-gl.c'))
+   sdl_ss.add(when: x11, if_true: files('x_keymap.c'))
+   ui_modules += {'sdl' : sdl_ss}
+--- qemu-10.1.2/ui/sdl2.c	2025-10-20 15:44:01
++++ qemu-10.1.2-patched/ui/sdl2.c	2025-11-26 09:07:45
+@@ -616,12 +616,18 @@
+          * key is released.
+          */
+         scon->ignore_hotkeys = get_mod_state();
++#ifdef CONFIG_SDL_CLIPBOARD
++        sdl2_clipboard_handle_focus_change(scon, true);
++#endif
+         break;
+     case SDL_WINDOWEVENT_FOCUS_LOST:
+         if (gui_grab && !gui_fullscreen) {
+             sdl_grab_end(scon);
+         }
+         break;
++#ifdef CONFIG_SDL_CLIPBOARD
++        sdl2_clipboard_handle_focus_change(scon, false);
++#endif
+     case SDL_WINDOWEVENT_RESTORED:
+         update_displaychangelistener(&scon->dcl, GUI_REFRESH_INTERVAL_DEFAULT);
+         break;
+@@ -701,6 +707,11 @@
+         case SDL_WINDOWEVENT:
+             handle_windowevent(ev);
+             break;
++#ifdef CONFIG_SDL_CLIPBOARD
++        case SDL_CLIPBOARDUPDATE:
++            sdl2_clipboard_handle_request(scon);
++            break;
++#endif
+         default:
+             break;
+         }
+@@ -911,6 +922,10 @@
+         }
+         register_displaychangelistener(&sdl2_console[i].dcl);
+ 
++
++#ifdef CONFIG_SDL_CLIPBOARD
++        sdl2_clipboard_init(&sdl2_console[i]);
++#endif
+ #if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_X11)
+         if (SDL_GetWindowWMInfo(sdl2_console[i].real_window, &info)) {
+ #if defined(SDL_VIDEO_DRIVER_WINDOWS)
+--- qemu-10.1.2/ui/sdl2-clipboard.c	1969-12-31 19:00:00
++++ qemu-10.1.2-patched/ui/sdl2-clipboard.c	2025-11-26 09:07:45
+@@ -0,0 +1,206 @@
++/*
++ * SDL UI -- clipboard support (improved async version)
++ *
++ * Copyright (C) 2023 Kamay Xutax <admin@xutaxkamay.com>
++ * Copyright (C) 2025 startergo <startergo@protonmail.com>
++ *
++ * SPDX-License-Identifier: GPL-2.0-or-later
++ */
++
++#include "qemu/osdep.h"
++#include "qemu/error-report.h"
++#include "ui/console.h"
++#include "ui/clipboard.h"
++#include "ui/sdl2.h"
++
++/* Track pending clipboard requests to handle async data */
++typedef struct {
++    struct sdl2_console *scon;
++    QemuClipboardInfo *info;
++    QemuClipboardType type;
++    bool request_sent;
++} SDLClipboardRequest;
++
++static SDLClipboardRequest *pending_request;
++
++static void sdl2_clipboard_clear_pending(void)
++{
++    if (pending_request) {
++        if (pending_request->info) {
++            qemu_clipboard_info_unref(pending_request->info);
++        }
++        g_clear_pointer(&pending_request, g_free);
++    }
++}
++
++static void sdl2_clipboard_reset_state(struct sdl2_console *scon)
++{
++    /* Clear any pending requests when clipboard state is reset */
++    sdl2_clipboard_clear_pending();
++
++    /* Force a fresh clipboard check after reconnection */
++    if (scon->clipboard_active) {
++        scon->last_focus_time = SDL_GetTicks();
++    }
++}
++
++static void sdl2_clipboard_notify(Notifier *notifier, void *data)
++{
++    QemuClipboardNotify *notify = data;
++    struct sdl2_console *scon =
++        container_of(notifier, struct sdl2_console, cbpeer.notifier);
++    bool self_update = notify->info->owner == &scon->cbpeer;
++    const char *text_data;
++    size_t text_size;
++
++    /* Skip processing if clipboard is not active (e.g., during screen lock) */
++    if (!scon->clipboard_active) {
++        return;
++    }
++
++    switch (notify->type) {
++    case QEMU_CLIPBOARD_UPDATE_INFO:
++        {
++            /* Skip self-updates to avoid clipboard manager conflicts */
++            if (self_update) {
++                return;
++            }
++
++            if (!notify->info->types[QEMU_CLIPBOARD_TYPE_TEXT].available) {
++                return;
++            }
++
++            /* Check if this is completion of our pending request */
++            if (pending_request && pending_request->info == notify->info &&
++                pending_request->type == QEMU_CLIPBOARD_TYPE_TEXT) {
++                sdl2_clipboard_clear_pending();
++            }
++
++            /* Check if data is available, request asynchronously if not */
++            if (!notify->info->types[QEMU_CLIPBOARD_TYPE_TEXT].data) {
++                /*
++                 * Protect against request loops by checking if we already
++                 * sent a request
++                 */
++                if (!pending_request || !pending_request->request_sent) {
++                    sdl2_clipboard_clear_pending();
++                    pending_request = g_new0(SDLClipboardRequest, 1);
++                    pending_request->scon = scon;
++                    pending_request->info =
++                        qemu_clipboard_info_ref(notify->info);
++                    pending_request->type = QEMU_CLIPBOARD_TYPE_TEXT;
++                    pending_request->request_sent = true;
++                    qemu_clipboard_request(notify->info,
++                                           QEMU_CLIPBOARD_TYPE_TEXT);
++                }
++                return;
++            }
++
++            /* Process available data */
++            text_size = notify->info->types[QEMU_CLIPBOARD_TYPE_TEXT].size;
++            if (text_size == 0) {
++                return;
++            }
++
++            text_data = (const char *)
++                notify->info->types[QEMU_CLIPBOARD_TYPE_TEXT].data;
++
++            /* Ensure null termination for SDL clipboard */
++            g_autofree char *text = g_strndup(text_data, text_size);
++            if (text && text[0] != '\0') {
++                if (SDL_SetClipboardText(text) < 0) {
++                    warn_report("SDL clipboard: Failed to set clipboard "
++                                "text: %s", SDL_GetError());
++                }
++            }
++            break;
++        }
++    case QEMU_CLIPBOARD_RESET_SERIAL:
++        sdl2_clipboard_reset_state(scon);
++        break;
++    }
++}
++
++static void sdl2_clipboard_request(QemuClipboardInfo *info,
++                                   QemuClipboardType type)
++{
++    char *text = NULL;
++
++    if (type != QEMU_CLIPBOARD_TYPE_TEXT) {
++        return;
++    }
++
++    text = SDL_GetClipboardText();
++    if (!text || !text[0]) {
++        if (text) {
++            warn_report("SDL clipboard: Failed to get clipboard text: %s",
++                        SDL_GetError());
++            SDL_free(text);
++        }
++        return;
++    }
++
++    qemu_clipboard_set_data(info->owner, info, type,
++                            strlen(text), text, true);
++    SDL_free(text);
++}
++
++void sdl2_clipboard_init(struct sdl2_console *scon)
++{
++    scon->cbpeer.name = "sdl2-clipboard";
++    scon->cbpeer.notifier.notify = sdl2_clipboard_notify;
++    scon->cbpeer.request = sdl2_clipboard_request;
++    scon->clipboard_active = true;
++    scon->last_focus_time = SDL_GetTicks();
++
++    qemu_clipboard_peer_register(&scon->cbpeer);
++}
++
++void sdl2_clipboard_handle_focus_change(struct sdl2_console *scon,
++                                         bool gained_focus)
++{
++    uint32_t current_time = SDL_GetTicks();
++
++    if (gained_focus) {
++        /* Reactivate clipboard after regaining focus */
++        scon->clipboard_active = true;
++        scon->last_focus_time = current_time;
++
++        /* Clear any stale pending requests */
++        sdl2_clipboard_clear_pending();
++
++        /* Force a fresh clipboard sync after focus is regained */
++        sdl2_clipboard_handle_request(scon);
++    } else {
++        /* Deactivate clipboard when losing focus to prevent conflicts */
++        scon->clipboard_active = false;
++        sdl2_clipboard_clear_pending();
++    }
++}
++
++void sdl2_clipboard_handle_request(struct sdl2_console *scon)
++{
++    char *text = NULL;
++    QemuClipboardInfo *info;
++
++    /* Skip if clipboard is not active */
++    if (!scon->clipboard_active) {
++        return;
++    }
++
++    text = SDL_GetClipboardText();
++    if (!text || !text[0]) {
++        if (text) {
++            SDL_free(text);
++        }
++        return; /* Ignore empty clipboard */
++    }
++
++    info = qemu_clipboard_info_new(&scon->cbpeer,
++                                   QEMU_CLIPBOARD_SELECTION_CLIPBOARD);
++    qemu_clipboard_set_data(&scon->cbpeer, info, QEMU_CLIPBOARD_TYPE_TEXT,
++                            strlen(text), text, true);
++    qemu_clipboard_update(info);
++    qemu_clipboard_info_unref(info);
++    SDL_free(text);
++}

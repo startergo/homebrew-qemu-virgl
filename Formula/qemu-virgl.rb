@@ -45,8 +45,10 @@ class QemuVirgl < Formula
   depends_on "ncurses"
   depends_on "nettle"
   depends_on "pixman"
+  depends_on "sdl2"
   depends_on "snappy"
   depends_on "spice-protocol"
+  depends_on "spice-server"
   depends_on "vde"
 
   resource "tomli" do
@@ -60,8 +62,13 @@ class QemuVirgl < Formula
   end
 
   patch :p1 do
-    url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/refs/heads/master/Patches/qemu-v07.diff"
+    url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/refs/heads/testing/Patches/qemu-v07.diff"
     sha256 "d0da295f24ece630f82e685ffa571ce02f11d31f8311942bc0b50d1430f3323a"
+  end
+
+  patch :p1 do
+    url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/refs/heads/testing/Patches/qemu-10.1.2-sdl-clipboard.patch"
+    sha256 "2e4cafbd93cf84f507ad0b853b3654e17b2a0e71713bf8532052fe8dab6a920b"
   end
 
   def install
@@ -86,7 +93,8 @@ class QemuVirgl < Formula
     angle_prefix = Formula["startergo/qemu-virgl/libangle"].opt_prefix
     epoxy_prefix = Formula["startergo/qemu-virgl/libepoxy-angle"].opt_prefix
     virgl_prefix = Formula["startergo/qemu-virgl/virglrenderer"].opt_prefix
-    spice_prefix = Formula["spice-protocol"].opt_prefix    
+    spice_protocol_prefix = Formula["spice-protocol"].opt_prefix
+    spice_server_prefix = Formula["spice-server"].opt_prefix
 
     # Build configuration
     args = %W[
@@ -95,7 +103,7 @@ class QemuVirgl < Formula
       --host-cc=#{ENV.cc}
       --disable-bsd-user
       --disable-guest-agent
-      --disable-sdl
+      --enable-sdl
       --disable-gtk
       --enable-cocoa
       --enable-opengl
@@ -111,16 +119,17 @@ class QemuVirgl < Formula
       --extra-cflags=-I#{angle_prefix}/include
       --extra-cflags=-I#{epoxy_prefix}/include
       --extra-cflags=-I#{virgl_prefix}/include
-      --extra-cflags=-I#{spice_prefix}/include/spice-1
+      --extra-cflags=-I#{spice_protocol_prefix}/include/spice-1
+      --extra-cflags=-I#{spice_server_prefix}/include/spice-server
       --extra-cflags=-DNCURSES_WIDECHAR=1
       --extra-ldflags=-L#{angle_prefix}/lib
       --extra-ldflags=-L#{epoxy_prefix}/lib
       --extra-ldflags=-L#{virgl_prefix}/lib
-      --extra-ldflags=-L#{spice_prefix}/lib
+      --extra-ldflags=-L#{spice_server_prefix}/lib
       --extra-ldflags=-Wl,-rpath,#{angle_prefix}/lib
       --extra-ldflags=-Wl,-rpath,#{epoxy_prefix}/lib
       --extra-ldflags=-Wl,-rpath,#{virgl_prefix}/lib
-      --extra-ldflags=-Wl,-rpath,#{spice_prefix}/lib
+      --extra-ldflags=-Wl,-rpath,#{spice_server_prefix}/lib
     ]
 
     # Add smbd path
@@ -145,7 +154,7 @@ class QemuVirgl < Formula
       system "install_name_tool", "-add_rpath", "#{angle_prefix}/lib", binary rescue nil
       system "install_name_tool", "-add_rpath", "#{epoxy_prefix}/lib", binary rescue nil
       system "install_name_tool", "-add_rpath", "#{virgl_prefix}/lib", binary rescue nil
-      system "install_name_tool", "-add_rpath", "#{spice_prefix}/lib", binary rescue nil
+      system "install_name_tool", "-add_rpath", "#{spice_server_prefix}/lib", binary rescue nil
       
       # Fix references to custom libraries
       ["libEGL.dylib", "libGLESv2.dylib"].each do |lib|
