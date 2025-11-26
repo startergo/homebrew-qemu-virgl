@@ -40,10 +40,10 @@ jobs:
 
       - name: Set up tap
         run: |
-          # Tap the repository directly using brew tap-new and manual copy
+          # Create tap directory and copy files
           # This avoids the Homebrew action's symlink cleanup
-          brew tap-new startergo/qemu-virgl || true
           TAP_DIR="$(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl"
+          mkdir -p "$(dirname "$TAP_DIR")"
           rm -rf "$TAP_DIR"
           cp -R ${{ github.workspace }} "$TAP_DIR"
 
@@ -129,5 +129,9 @@ jobs:
       - name: Cleanup tap directory
         if: always()
         run: |
-          # Remove tap using brew untap to properly clean up
-          brew untap startergo/qemu-virgl || true
+          # Remove tap directory manually
+          TAP_DIR="$(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl"
+          rm -rf "$TAP_DIR"
+          # Remove parent directory if empty
+          PARENT_DIR="$(dirname "$TAP_DIR")"
+          rmdir "$PARENT_DIR" 2>/dev/null || true
