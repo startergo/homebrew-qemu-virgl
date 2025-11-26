@@ -34,10 +34,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Homebrew
-        id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@master
-
       - name: Set up tap
         run: |
           mkdir -p $(brew --prefix)/Homebrew/Library/Taps/startergo
@@ -122,17 +118,5 @@ jobs:
             ~/Library/Logs/Homebrew/*/*.log
             ~/Library/Caches/Homebrew/Logs/*.log
       
-      - name: Cleanup tap symlink before post-action
-        if: always()
-        run: |
-          # Remove symlink manually to prevent Homebrew action's post-cleanup from failing
-          TAP_PATH="$(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl"
-          if [ -L "$TAP_PATH" ]; then
-            rm -f "$TAP_PATH"
-          fi
-          # Remove parent directory if empty
-          PARENT_DIR="$(brew --prefix)/Homebrew/Library/Taps/startergo"
-          if [ -d "$PARENT_DIR" ] && [ -z "$(ls -A "$PARENT_DIR")" ]; then
-            rmdir "$PARENT_DIR"
-          fi
+
       
