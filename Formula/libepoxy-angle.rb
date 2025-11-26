@@ -8,8 +8,9 @@ class LibepoxyAngle < Formula
   license "MIT"
 
   bottle do
-    root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20251125.201155"
-    sha256 cellar: :any, arm64_sequoia: "b162e0ae74873d116a30109b412b33a9394f98636503fbc1a7d16e7f7662cad7"
+    root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20251126.022915"
+    sha256 cellar: :any, arm64_sequoia: "bb510af5190232adcf4ce2b1712e8a199c25ecf2755d7f3176216e48bb3bd368"
+    sha256 cellar: :any, sequoia:       "08ce22b0bc5d9eb45979a2817e470ec5564dab7362fde28978c11ef727afa81b"
   end
 
   depends_on "meson" => :build

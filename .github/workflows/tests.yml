@@ -72,7 +72,7 @@ jobs:
           echo "Installing pre-built bottles..."
           brew install startergo/qemu-virgl/qemu-virgl
 
-      - name: Test QEMU functionality
+      - name: Test QEMU basic functionality
         run: |
           qemu-system-x86_64 --version
           qemu-img --version
@@ -116,7 +116,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: brew-logs
+          name: brew-logs-${{ matrix.os }}
           path: |
             ~/Library/Logs/Homebrew/*.log
             ~/Library/Logs/Homebrew/*/*.log
