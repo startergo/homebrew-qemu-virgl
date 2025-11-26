@@ -60,8 +60,8 @@ class QemuVirgl < Formula
     sha256 "81237c7b42dc0ffc8b32a2f5734e3480a3f9a470c50c14a9c4576a2561a35807"
   end
 
-  patch do
-    url "#{tap.path}/Patches/qemu-v07.diff"
+  patch :p1 do
+    url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/refs/heads/testing/Patches/qemu-v07.diff"
     sha256 "d0da295f24ece630f82e685ffa571ce02f11d31f8311942bc0b50d1430f3323a"
   end
 
