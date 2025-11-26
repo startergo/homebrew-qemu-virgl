@@ -76,7 +76,7 @@ jobs:
       - name: Verify OpenGL/ANGLE library linking
         run: |
           echo "=== Checking QEMU library dependencies ==="
-          otool -L $(brew --prefix)/bin/qemu-system-aarch64 | grep -E "(libangle|libepoxy|virgl|spice-server|SDL2)" || echo "⚠️  No OpenGL/SPICE/SDL libraries found in dependencies"
+          otool -L $(brew --prefix)/bin/qemu-system-aarch64 | grep -E "(libangle|libepoxy|virgl|spice-server)" || echo "⚠️  No OpenGL/SPICE libraries found in dependencies"
           
           echo -e "\n=== Checking rpaths in QEMU binary ==="
           otool -l $(brew --prefix)/bin/qemu-system-aarch64 | grep -A2 LC_RPATH | grep path || echo "⚠️  No rpaths found"
