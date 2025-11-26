@@ -45,7 +45,6 @@ class QemuVirgl < Formula
   depends_on "ncurses"
   depends_on "nettle"
   depends_on "pixman"
-  depends_on "sdl2"
   depends_on "snappy"
   depends_on "spice-protocol"
   depends_on "spice-server"
@@ -61,14 +60,9 @@ class QemuVirgl < Formula
     sha256 "81237c7b42dc0ffc8b32a2f5734e3480a3f9a470c50c14a9c4576a2561a35807"
   end
 
-  patch :p1 do
-    url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/refs/heads/testing/Patches/qemu-v07.diff"
+  patch do
+    url "#{tap.path}/Patches/qemu-v07.diff"
     sha256 "d0da295f24ece630f82e685ffa571ce02f11d31f8311942bc0b50d1430f3323a"
-  end
-
-  patch :p1 do
-    url "https://raw.githubusercontent.com/startergo/homebrew-qemu-virgl/refs/heads/testing/Patches/qemu-10.1.2-sdl-clipboard.patch"
-    sha256 "2e4cafbd93cf84f507ad0b853b3654e17b2a0e71713bf8532052fe8dab6a920b"
   end
 
   def install
@@ -103,7 +97,7 @@ class QemuVirgl < Formula
       --host-cc=#{ENV.cc}
       --disable-bsd-user
       --disable-guest-agent
-      --enable-sdl
+      --disable-sdl
       --disable-gtk
       --enable-cocoa
       --enable-opengl
