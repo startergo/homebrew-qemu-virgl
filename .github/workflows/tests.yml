@@ -126,6 +126,11 @@ jobs:
         if: always()
         run: |
           TAP_PATH="$(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl"
-          if [ -L "$TAP_PATH" ]; then
+          if [ -L "$TAP_PATH" ] || [ -e "$TAP_PATH" ]; then
             rm -f "$TAP_PATH"
+          fi
+          # Also remove parent directory if empty
+          TAP_DIR="$(brew --prefix)/Homebrew/Library/Taps/startergo"
+          if [ -d "$TAP_DIR" ] && [ -z "$(ls -A "$TAP_DIR")" ]; then
+            rmdir "$TAP_DIR"
           fi
