@@ -37,6 +37,7 @@ jobs:
       - name: Set up tap
         run: |
           mkdir -p $(brew --prefix)/Homebrew/Library/Taps/startergo
+          rm -rf $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
           ln -s ${{ github.workspace }} $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
 
       - name: Clear Homebrew cache
@@ -55,18 +56,18 @@ jobs:
       - name: Install gn and rapidjson for ANGLE build
         run: |
           # Install gn from our tap and rapidjson from Homebrew
-          brew install --build-bottle --formula startergo/qemu-virgl/gn
+          brew install --build-bottle --formula ${{ github.workspace }}/Formula/gn.rb
           brew install rapidjson
 
       - name: Build dependencies
         run: |
-          brew install --build-bottle --formula startergo/qemu-virgl/libangle --verbose
-          brew install --build-bottle --formula startergo/qemu-virgl/libepoxy-angle --verbose
-          brew install --build-bottle --formula startergo/qemu-virgl/virglrenderer --verbose
+          brew install --build-bottle --formula ${{ github.workspace }}/Formula/libangle.rb --verbose
+          brew install --build-bottle --formula ${{ github.workspace }}/Formula/libepoxy-angle.rb --verbose
+          brew install --build-bottle --formula ${{ github.workspace }}/Formula/virglrenderer.rb --verbose
 
       - name: Build qemu-virgl
         run: |
-          brew install --build-bottle --formula startergo/qemu-virgl/qemu-virgl --verbose
+          brew install --build-bottle --formula ${{ github.workspace }}/Formula/qemu-virgl.rb --verbose
 
       - name: Test installation
         run: |
@@ -103,10 +104,10 @@ jobs:
       - name: Create bottles
         run: |
           mkdir -p bottles
-          brew bottle --no-rebuild startergo/qemu-virgl/libangle
-          brew bottle --no-rebuild startergo/qemu-virgl/libepoxy-angle
-          brew bottle --no-rebuild startergo/qemu-virgl/virglrenderer
-          brew bottle --no-rebuild startergo/qemu-virgl/qemu-virgl
+          brew bottle --no-rebuild ${{ github.workspace }}/Formula/libangle.rb
+          brew bottle --no-rebuild ${{ github.workspace }}/Formula/libepoxy-angle.rb
+          brew bottle --no-rebuild ${{ github.workspace }}/Formula/virglrenderer.rb
+          brew bottle --no-rebuild ${{ github.workspace }}/Formula/qemu-virgl.rb
           
           # Rename bottles from double-dash to single-dash format for Homebrew compatibility
           for file in *.bottle.tar.gz; do
