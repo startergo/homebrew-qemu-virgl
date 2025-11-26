@@ -40,8 +40,12 @@ jobs:
 
       - name: Set up tap
         run: |
-          mkdir -p $(brew --prefix)/Homebrew/Library/Taps/startergo
-          ln -s ${{ github.workspace }} $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
+          # Tap the repository directly using brew tap-new and manual copy
+          # This avoids the Homebrew action's symlink cleanup
+          brew tap-new startergo/qemu-virgl || true
+          TAP_DIR="$(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl"
+          rm -rf "$TAP_DIR"
+          cp -R ${{ github.workspace }} "$TAP_DIR"
 
       - name: Install gn and rapidjson for ANGLE build
         if: ${{ github.event.inputs.use_bottles != 'true' }}
@@ -122,15 +126,8 @@ jobs:
             ~/Library/Logs/Homebrew/*/*.log
             ~/Library/Caches/Homebrew/Logs/*.log
       
-      - name: Cleanup tap symlink
+      - name: Cleanup tap directory
         if: always()
         run: |
-          TAP_PATH="$(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl"
-          if [ -L "$TAP_PATH" ] || [ -e "$TAP_PATH" ]; then
-            rm -f "$TAP_PATH"
-          fi
-          # Also remove parent directory if empty
-          TAP_DIR="$(brew --prefix)/Homebrew/Library/Taps/startergo"
-          if [ -d "$TAP_DIR" ] && [ -z "$(ls -A "$TAP_DIR")" ]; then
-            rmdir "$TAP_DIR"
-          fi
+          # Remove tap using brew untap to properly clean up
+          brew untap startergo/qemu-virgl || true
