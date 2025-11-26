@@ -37,9 +37,13 @@ jobs:
 
       - name: Set up tap
         run: |
-          mkdir -p $(brew --prefix)/Homebrew/Library/Taps/startergo
+          # Remove any existing tap directory
           rm -rf $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
-          ln -s ${{ github.workspace }} $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
+          # Copy the repository to the tap location (not symlink, as Homebrew validates taps)
+          mkdir -p $(brew --prefix)/Homebrew/Library/Taps/startergo
+          cp -R ${{ github.workspace }} $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
+          # Verify tap is set up correctly
+          brew tap-info startergo/qemu-virgl
 
       - name: Clear Homebrew cache
         run: |
@@ -50,7 +54,7 @@ jobs:
         if: ${{ github.event.inputs.use_bottles != 'true' }}
         run: |
           # Install gn from our tap and rapidjson from Homebrew
-          brew install --build-from-source --formula ${{ github.workspace }}/Formula/gn.rb
+          brew install --build-from-source --formula startergo/qemu-virgl/gn
           brew install rapidjson
 
       - name: Build dependencies from source
@@ -60,14 +64,14 @@ jobs:
           GIT_CURL_VERBOSE: 1
           HOMEBREW_VERBOSE: 1
         run: |
-          brew install --build-from-source --formula ${{ github.workspace }}/Formula/libangle.rb --verbose
-          brew install --build-from-source --formula ${{ github.workspace }}/Formula/libepoxy-angle.rb
-          brew install --build-from-source --formula ${{ github.workspace }}/Formula/virglrenderer.rb
+          brew install --build-from-source --formula startergo/qemu-virgl/libangle --verbose
+          brew install --build-from-source --formula startergo/qemu-virgl/libepoxy-angle
+          brew install --build-from-source --formula startergo/qemu-virgl/virglrenderer
 
       - name: Build qemu-virgl from source
         if: ${{ github.event.inputs.use_bottles != 'true' }}
         run: |
-          brew install --build-from-source --formula ${{ github.workspace }}/Formula/qemu-virgl.rb --verbose
+          brew install --build-from-source --formula startergo/qemu-virgl/qemu-virgl --verbose
 
       - name: Install from bottles
         if: ${{ github.event.inputs.use_bottles == 'true' }}
