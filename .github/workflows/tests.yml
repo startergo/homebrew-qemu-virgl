@@ -135,3 +135,5 @@ jobs:
           # Remove parent directory if empty
           PARENT_DIR="$(dirname "$TAP_DIR")"
           rmdir "$PARENT_DIR" 2>/dev/null || true
+          # Unset STATE_TAP_SYMLINK to prevent Homebrew action from trying to clean it up
+          echo "STATE_TAP_SYMLINK=" >> $GITHUB_ENV
