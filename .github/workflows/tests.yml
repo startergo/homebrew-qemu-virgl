@@ -39,6 +39,11 @@ jobs:
           mkdir -p $(brew --prefix)/Homebrew/Library/Taps/startergo
           ln -s ${{ github.workspace }} $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
 
+      - name: Clear Homebrew cache
+        run: |
+          brew cleanup -s
+          rm -rf $(brew --cache)
+
       - name: Install gn and rapidjson for ANGLE build
         if: ${{ github.event.inputs.use_bottles != 'true' }}
         run: |

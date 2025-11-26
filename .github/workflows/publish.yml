@@ -38,6 +38,11 @@ jobs:
           mkdir -p $(brew --prefix)/Homebrew/Library/Taps/startergo
           ln -s ${{ github.workspace }} $(brew --prefix)/Homebrew/Library/Taps/startergo/homebrew-qemu-virgl
 
+      - name: Clear Homebrew cache
+        run: |
+          brew cleanup -s
+          rm -rf $(brew --cache)
+
       - name: Cache Homebrew downloads
         uses: actions/cache@v3
         with:
