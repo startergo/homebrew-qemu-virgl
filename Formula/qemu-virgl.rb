@@ -128,6 +128,9 @@ class QemuVirgl < Formula
 
     # Add smbd path
     args << "--smbd=#{HOMEBREW_PREFIX}/sbin/samba-dot-org-smbd"
+    
+    # Only build specific targets: aarch64, x86_64, and i386
+    args << "--target-list=aarch64-softmmu,x86_64-softmmu,i386-softmmu"
 
     system "./configure", *args
     system "make", "V=1"
