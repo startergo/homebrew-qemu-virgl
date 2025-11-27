@@ -96,6 +96,40 @@ quickemu --vm fedora-41.conf
 
 The quickemu-virgl wrapper automatically uses the GPU-accelerated QEMU binaries from qemu-virgl, giving you the best of both worlds: easy VM management and hardware-accelerated graphics.
 
+#### Optional: Quickgui - Graphical Interface for Quickemu
+
+If you prefer a graphical interface, you can build [Quickgui](https://github.com/quickemu-project/quickgui), which provides a GUI for managing VMs with quickemu.
+
+**Prerequisites:**
+- Flutter SDK
+- Xcode with macOS development tools
+- CocoaPods
+
+**Building Quickgui:**
+```sh
+# Install Flutter and CocoaPods first
+brew install flutter
+brew install cocoapods
+
+# Clone and build Quickgui
+git clone https://github.com/quickemu-project/quickgui.git
+cd quickgui
+flutter pub get
+flutter config --enable-macos-desktop
+flutter build macos --release
+```
+
+**Running Quickgui:**
+```sh
+# Launch the application
+open build/macos/Build/Products/Release/quickgui.app
+
+# Or run the binary directly
+./build/macos/Build/Products/Release/quickgui.app/Contents/MacOS/quickgui
+```
+
+After building, you can copy `quickgui.app` to your Applications folder and launch it through Spotlight. Quickgui will automatically detect and use your quickemu-virgl installation with GPU acceleration.
+
 ### Usage
 Qemu has many command line options and emulated devices, with specific configurations based on your CPU type (Intel/Apple Silicon).
 
