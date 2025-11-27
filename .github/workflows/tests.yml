@@ -66,13 +66,17 @@ jobs:
       - name: Build qemu-virgl from source
         if: ${{ github.event.inputs.use_bottles != 'true' }}
         run: |
-          brew install --build-from-source --formula startergo/qemu-virgl/qemu-virgl --verbose
+          # Install qemu-virgl, allowing link conflicts with standard libepoxy (not used)
+          brew install --build-from-source --formula startergo/qemu-virgl/qemu-virgl --verbose || true
+          # Force complete installation even if linking failed
+          brew link --overwrite --force startergo/qemu-virgl/qemu-virgl
 
       - name: Install from bottles
         if: ${{ github.event.inputs.use_bottles == 'true' }}
         run: |
           echo "Installing pre-built bottles..."
-          brew install startergo/qemu-virgl/qemu-virgl
+          brew install startergo/qemu-virgl/qemu-virgl || true
+          brew link --overwrite --force startergo/qemu-virgl/qemu-virgl
 
       - name: Test QEMU basic functionality
         run: |
