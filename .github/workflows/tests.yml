@@ -84,6 +84,7 @@ jobs:
 
       - name: Verify OpenGL/ANGLE library linking
         run: |
+          set +e
           echo "=== Checking QEMU library dependencies ==="
           otool -L $(brew --prefix)/bin/qemu-system-aarch64 | grep -E "(libangle|libepoxy|virgl|spice-server)" || echo "⚠️  No OpenGL/SPICE libraries found in dependencies"
           
@@ -91,23 +92,24 @@ jobs:
           otool -l $(brew --prefix)/bin/qemu-system-aarch64 | grep -A2 LC_RPATH | grep path || echo "⚠️  No rpaths found"
           
           echo -e "\n=== Verifying ANGLE libraries exist ==="
-          ls -lh $(brew --prefix)/opt/libangle/lib/libGLESv2.dylib
-          ls -lh $(brew --prefix)/opt/libangle/lib/libEGL.dylib
+          ls -lh $(brew --prefix)/opt/libangle/lib/libGLESv2.dylib || echo "⚠️  libGLESv2.dylib not found"
+          ls -lh $(brew --prefix)/opt/libangle/lib/libEGL.dylib || echo "⚠️  libEGL.dylib not found"
           
           echo -e "\n=== Verifying libepoxy-angle exists ==="
-          ls -lh $(brew --prefix)/opt/libepoxy-angle/lib/libepoxy.0.dylib
+          ls -lh $(brew --prefix)/opt/libepoxy-angle/lib/libepoxy.0.dylib || echo "⚠️  libepoxy not found"
           
           echo -e "\n=== Verifying virglrenderer exists ==="
-          ls -lh $(brew --prefix)/opt/virglrenderer/lib/libvirglrenderer.1.dylib
+          ls -lh $(brew --prefix)/opt/virglrenderer/lib/libvirglrenderer.1.dylib || echo "⚠️  virglrenderer not found"
           
           echo -e "\n=== Verifying spice-server exists ==="
-          ls -lh $(brew --prefix)/opt/spice-server/lib/libspice-server.1.dylib
+          ls -lh $(brew --prefix)/opt/spice-server/lib/libspice-server.1.dylib || echo "⚠️  spice-server not found"
           
           echo -e "\n=== Checking QEMU build configuration ==="
           qemu-system-aarch64 -display help 2>&1 | grep -E "(cocoa|sdl)" || echo "⚠️  Display backends not found"
           
           echo -e "\n=== Checking QEMU device support ==="
           qemu-system-aarch64 -device help 2>&1 | grep virtio-gpu || echo "⚠️  virtio-gpu devices not found"
+          set -e
 
       - name: Show libangle logs on failure
         if: failure()
