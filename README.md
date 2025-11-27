@@ -70,6 +70,32 @@ which virgl_test_server
 ```
 Should show /opt/homebrew/bin/virgl_test_server
 
+### Optional: Quickemu for Easy VM Management
+
+If you prefer a simpler interface for creating and managing VMs, you can install `quickemu-virgl`, which is a patched version of [Quickemu](https://github.com/quickemu-project/quickemu) that uses qemu-virgl for GPU acceleration:
+
+```sh
+brew install startergo/qemu-virgl/quickemu-virgl --HEAD
+```
+
+Quickemu provides convenient commands for:
+- Downloading and setting up VMs for various operating systems (`quickget`)
+- Managing VM configurations with simple config files
+- Running VMs with optimized settings (`quickemu`)
+
+**Example usage:**
+```sh
+# Download a Fedora VM configuration
+quickget fedora 41
+
+# Run the VM with GPU acceleration (automatically uses qemu-virgl)
+quickemu --vm fedora-41.conf
+```
+
+> **Note**: quickemu-virgl conflicts with the standard `quickemu` package. If you have the standard quickemu installed, uninstall it first: `brew uninstall quickemu`
+
+The quickemu-virgl wrapper automatically uses the GPU-accelerated QEMU binaries from qemu-virgl, giving you the best of both worlds: easy VM management and hardware-accelerated graphics.
+
 ### Usage
 Qemu has many command line options and emulated devices, with specific configurations based on your CPU type (Intel/Apple Silicon).
 
