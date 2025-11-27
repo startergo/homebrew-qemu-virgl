@@ -46,8 +46,14 @@ The formula will automatically install all required dependencies including:
 - libangle (Apple's Metal backend for OpenGL)
 - libepoxy-angle (OpenGL dispatch library)
 - virglrenderer (OpenGL virtualization library)
+- spice-server (for clipboard sharing and enhanced guest integration)
 
 > ℹ️ **Note**: Pre-built bottles are available for faster installation. If bottles are not available for your macOS version, Homebrew will build from source (15-30 minutes).
+
+> ⚠️ **Important**: During installation, you may see a warning about libepoxy symlink conflicts. This is expected and can be safely ignored. The installation will complete successfully, and qemu-virgl will use the correct custom libepoxy-angle library. If the installation appears to fail at the linking step, run:
+> ```sh
+> brew link --overwrite --force startergo/qemu-virgl/qemu-virgl
+> ```
 
 ### Verifying Installation
 
@@ -76,10 +82,12 @@ Important: Use `virtio-gpu-gl-pci` command line option instead of `virtio-gpu-pc
 First, create a disk image you'll run your Linux installation from (tune image size as needed):
 
 ```sh
-qemu-img create hdd.raw 64G
+qemu-img create -f qcow2 hdd.qcow2 64G
 ```
 
-This command creates a raw disk image named `hdd.raw` with a size of 64 GB. You can adjust the size as needed.
+This command creates a qcow2 disk image named `hdd.qcow2` with a maximum size of 64 GB. The qcow2 format only uses disk space as needed (thin provisioning), so it starts small and grows dynamically. You can adjust the size as needed.
+
+> 💡 **Tip**: Use `qcow2` format for space efficiency (grows as needed) or `raw` format for better performance.
 
 Download an ARM based Fedora image:
 
@@ -94,7 +102,7 @@ cp $(dirname $(which qemu-img))/../share/qemu/edk2-arm-vars.fd .
 ```
 
 #### Verify that OpenGL acceleration is working
-```
+```sh
 sudo qemu-system-aarch64 \
   -machine virt,accel=hvf \
   -cpu cortex-a72 -smp 2 -m 1G \
@@ -104,7 +112,11 @@ sudo qemu-system-aarch64 \
   -device VGA,vgamem_mb=64 \
   -monitor stdio
 ```
-When the QEMU monitor appears (shown by the (qemu) prompt), type `info qtree`. The `qtree` output clearly shows that `virtio-gpu-gl-pci` and `virtio-gpu-gl-device` are properly configured in the VM, confirming that your OpenGL acceleration is working correctly through the ANGLE/Metal path. Type quit to exit QEMU.
+When the QEMU monitor appears (shown by the `(qemu)` prompt), type `info qtree` and press Enter. Look for these entries in the output:
+- `dev: virtio-gpu-gl-pci` - Shows the PCI device is configured
+- `dev: virtio-gpu-gl-device` - Shows the VirtIO GPU device with OpenGL support
+
+This confirms that your OpenGL acceleration is working correctly through the ANGLE/Metal path. Type `quit` to exit QEMU.
 
 Install the system from the ISO image:
 
@@ -114,15 +126,16 @@ sudo qemu-system-aarch64 \
   -cpu cortex-a72 -smp 2 -m 4G \
   -device intel-hda -device hda-output \
   -device qemu-xhci \
-  -device virtio-gpu-gl-pci \
+  -device virtio-gpu-gl-pci,xres=1920,yres=1080 \
   -device usb-kbd \
+  -device usb-tablet \
   -device virtio-net-pci,netdev=net \
   -device virtio-mouse-pci \
   -display cocoa,gl=es \
   -netdev vmnet-shared,id=net \
   -drive "if=pflash,format=raw,file=./edk2-aarch64-code.fd,readonly=on" \
   -drive "if=pflash,format=raw,file=./edk2-arm-vars.fd,discard=on" \
-  -drive "if=virtio,format=raw,file=./hdd.raw,discard=on" \
+  -drive "if=virtio,format=qcow2,file=./hdd.qcow2,discard=on" \
   -chardev qemu-vdagent,id=spice,name=vdagent,clipboard=on \
   -device virtio-serial-pci \
   -device virtserialport,chardev=spice,name=com.redhat.spice.0 \
@@ -158,27 +171,78 @@ sudo qemu-system-aarch64 \
   -cpu cortex-a72 -smp 2 -m 4G \
   -device intel-hda -device hda-output \
   -device qemu-xhci \
-  -device virtio-gpu-gl-pci \
+  -device virtio-gpu-gl-pci,xres=1920,yres=1080 \
   -device usb-kbd \
+  -device usb-tablet \
   -device virtio-net-pci,netdev=net \
   -device virtio-mouse-pci \
   -display cocoa,gl=es \
   -netdev vmnet-shared,id=net \
   -drive "if=pflash,format=raw,file=./edk2-aarch64-code.fd,readonly=on" \
   -drive "if=pflash,format=raw,file=./edk2-arm-vars.fd,discard=on" \
-  -drive "if=virtio,format=raw,file=./hdd.raw,discard=on" \
+  -drive "if=virtio,format=qcow2,file=./hdd.qcow2,discard=on" \
   -chardev qemu-vdagent,id=spice,name=vdagent,clipboard=on \
   -device virtio-serial-pci \
   -device virtserialport,chardev=spice,name=com.redhat.spice.0
 ```
 This command is similar to the previous one but without the `-cdrom` and `-boot d` options, allowing you to boot directly from the installed system on the disk image.
 
+#### Verifying GPU Acceleration in Fedora
+
+Once your Fedora system has booted, you can verify that GPU acceleration is working properly by installing and running Mesa utilities:
+
+```bash
+# Create and enter a toolbox
+toolbox create
+toolbox enter
+
+# Now you can use dnf inside the toolbox
+sudo dnf install mesa-demos glx-utils glmark2
+
+# Check OpenGL renderer and direct rendering
+glxinfo | grep -E "OpenGL renderer|direct rendering"
+
+# Expected output:
+# direct rendering: Yes
+# OpenGL renderer string: virgl (ANGLE (Apple, Apple M4 Pro, OpenGL 4.1 Metal - 89.4))
+
+# Run a simple OpenGL test
+glxgears
+```
+
+**Clipboard Sharing:**
+
+Clipboard sharing between macOS and Fedora works automatically! Fedora Silverblue includes `spice-vdagent` pre-installed and running, so you can immediately copy and paste text between your Mac and the VM.
+
+For other Fedora editions (Workstation, Server, etc.), if clipboard sharing doesn't work, install the SPICE guest agent:
+
+```bash
+sudo dnf install spice-vdagent
+sudo systemctl enable --now spice-vdagentd
+```
+
+You can verify the agent is running with:
+```bash
+systemctl status spice-vdagentd
+```
+
+**Known Limitations:**
+
+- **Moving between Retina and non-Retina displays**: When you move the VM window between displays with different pixel densities (e.g., Retina to 1080p), the display may automatically adjust resolution but render incorrectly - typically shrinking to the bottom-left corner. This is a known issue with QEMU's virtio-gpu and the macOS Cocoa display backend not properly coordinating resolution changes across different display densities.
+  
+  **Workarounds:**
+  - Keep the VM window on one display (either Retina or 1080p)
+  - Restart the VM after moving to the target display
+  - Disable automatic resolution adjustment in GNOME Settings → Displays (set a fixed resolution that works on both displays)
+
+- **EFI/GRUB bootloader resolution**: During boot, the EFI firmware and GRUB bootloader run at a fixed low resolution before the OS loads. The resolution parameters (`xres=1920,yres=1080`) only take effect once the desktop environment starts.
+
 ### Usage - Intel Macs
 Important: Use virtio-gpu-gl-pci command line option instead of virtio-gpu-pci for GPU acceleration
 First, create a disk image you'll run your Linux installation from (tune image size as needed):
 
 ```sh
-qemu-img create hdd.raw 64G
+qemu-img create -f qcow2 hdd.qcow2 64G
 ```
 Download an x86 based Fedora image:
 
@@ -200,7 +264,7 @@ sudo qemu-system-x86_64 \
   -smp 4 \
   -m 8G \
   -bios ./edk2-x86_64-code.fd \
-  -drive file=hdd.raw,if=virtio,format=raw \
+  -drive file=hdd.qcow2,if=virtio,format=qcow2 \
   -netdev vmnet-shared,id=net0 \
   -device virtio-net-pci,netdev=net0 \
   -vga virtio-gpu-gl-pci \
@@ -257,23 +321,30 @@ If you encounter installation issues:
 
 ### Common Issues
 
-1. **Missing libEGL.dylib error**:
+1. **libepoxy symlink conflicts**:
+   If installation fails with symlink conflicts, this is due to spice-server dependencies installing standard libepoxy alongside our custom libepoxy-angle. Run:
+   ```sh
+   brew link --overwrite --force startergo/qemu-virgl/qemu-virgl
+   ```
+   This will properly link qemu-virgl to use the correct custom libraries.
+
+2. **Missing libEGL.dylib error**:
    If you see: "Couldn't open libEGL.dylib", this indicates a problem with library linking. Try reinstalling:
    ```sh
    brew reinstall startergo/qemu-virgl/qemu-virgl
    ```
 
-2. **Network Issues**:
+3. **Network Issues**:
    - If running with vmnet-shared fails, make sure your user has proper permissions
    - You might need to grant permissions in System Settings > Privacy & Security > Network
 
-3. **For Best Performance**:
+4. **For Best Performance**:
    - Use `-smp` matching your CPU core count (use `sysctl -n hw.ncpu` to see available cores)
    - Increase memory (`-m`) to 8G or more if available on your system
    - For better performance on newer Macs, try increasing CPU and RAM settings
 
-4. **Memory Limitation Errors**:
+5. **Memory Limitation Errors**:
    If you see "Addressing limited to 32 bits" errors, remove the `highmem=off` option or reduce your VM memory allocation.
 
-5. **Network Backend Errors**:
+6. **Network Backend Errors**:
    QEMU on macOS requires the `vmnet` backend. Do not use `-netdev user` as it may not be compiled into the binary.
