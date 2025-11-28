@@ -7,12 +7,12 @@ class QuickemuVirgl < Formula
   end
 
   stable do
-    latest_release = JSON.parse(Utils.safe_popen_read("curl", "-s", "https://api.github.com/repos/quickemu-project/quickemu/releases/latest"))
-    version latest_release["tag_name"]
-    url "https://api.github.com/repos/quickemu-project/quickemu/tarball/#{latest_release["tag_name"]}"
+    # Using startergo fork with ARM64 support and GL ES acceleration until merged upstream
+    url "https://github.com/startergo/quickemu/archive/refs/heads/fix-tcg-cpu-flags-macos.tar.gz"
+    version "4.9.8-arm64"
   end
 
-  head "https://github.com/quickemu-project/quickemu.git"
+  head "https://github.com/startergo/quickemu.git", branch: "fix-tcg-cpu-flags-macos"
   license "MIT"
 
   depends_on "bash"
