@@ -39,6 +39,7 @@ class QemuVirgl < Formula
   depends_on "startergo/qemu-virgl/libepoxy-angle"
   depends_on "startergo/qemu-virgl/virglrenderer"
   depends_on "libpng"
+  depends_on "libslirp"
   depends_on "libssh"
   depends_on "libusb"
   depends_on "lzo"
@@ -104,6 +105,7 @@ class QemuVirgl < Formula
       --enable-virglrenderer
       --enable-curses
       --enable-libssh
+      --enable-slirp
       --enable-vde
       --enable-fdt=system
       --enable-debug
