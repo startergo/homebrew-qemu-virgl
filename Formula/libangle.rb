@@ -3,7 +3,7 @@ class Libangle < Formula
   homepage "https://chromium.googlesource.com/angle/angle"
   # Use a dummy URL - actual ANGLE download happens in install method
   # HEAD-only formula: no checksum verification for dummy tarball
-  url "https://github.com/startergo/homebrew-qemu-virgl/archive/refs/heads/testing.tar.gz"
+  url "https://github.com/startergo/homebrew-qemu-virgl/archive/refs/heads/master.tar.gz"
   version "2025.11.24"
   license "BSD-3-Clause"
 
