@@ -8,7 +8,7 @@ class Libangle < Formula
   license "BSD-3-Clause"
 
   bottle do
-    root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20251129"
+    root_url "https://github.com/startergo/homebrew-qemu-virgl/releases/download/v20251128.223351"
     sha256 cellar: :any, arm64_sequoia: "322cba4758dec5d33e68773cdc7b4808af62575d09bff6430e51036f47567d83"
     sha256 cellar: :any, sequoia:       "4d46e054be4f6248b7f8733e5be25ae0af3b79079f2f9008555b643270f448ff"
   end
