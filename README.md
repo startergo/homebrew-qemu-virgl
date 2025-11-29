@@ -114,6 +114,14 @@ brew install cocoapods
 # Clone and build Quickgui
 git clone https://github.com/quickemu-project/quickgui.git
 cd quickgui
+
+# Apple Silicon only: Create symlinks so quickgui can find quickemu/quickget
+# (Intel Macs don't need this - Homebrew already installs to /usr/local/bin)
+if [[ $(uname -m) == "arm64" ]]; then
+  sudo ln -sf /opt/homebrew/bin/quickemu /usr/local/bin/quickemu
+  sudo ln -sf /opt/homebrew/bin/quickget /usr/local/bin/quickget
+fi
+
 flutter pub get
 flutter config --enable-macos-desktop
 flutter build macos --release
@@ -129,6 +137,8 @@ open build/macos/Build/Products/Release/quickgui.app
 ```
 
 After building, you can copy `quickgui.app` to your Applications folder and launch it through Spotlight. Quickgui will automatically detect and use your quickemu-virgl installation with GPU acceleration.
+
+> **Note**: The symlinks in `/usr/local/bin` are necessary because macOS GUI apps (launched from Finder/Spotlight) don't inherit your shell's PATH. They only search in `/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin`, so the symlinks make Homebrew's quickemu/quickget visible to quickgui without modifying its source code.
 
 ### Usage
 Qemu has many command line options and emulated devices, with specific configurations based on your CPU type (Intel/Apple Silicon).
