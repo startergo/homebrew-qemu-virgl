@@ -75,7 +75,7 @@ Should show /opt/homebrew/bin/virgl_test_server
 If you prefer a simpler interface for creating and managing VMs, you can install `quickemu-virgl`, which is a patched version of [Quickemu](https://github.com/quickemu-project/quickemu) that uses qemu-virgl for GPU acceleration:
 
 ```sh
-brew install startergo/qemu-virgl/quickemu-virgl --HEAD
+brew install startergo/qemu-virgl/quickemu-virgl
 ```
 
 Quickemu provides convenient commands for:
